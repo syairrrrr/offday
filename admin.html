@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Persetujuan Offday</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <style>
+        body {
+            background-image: url('https://demigod-assets.sgp1.cdn.digitaloceanspaces.com/bgassets/goltogel.webp');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+        }
+        /* Efek Neon Emas (Gold Glow) */
+        .neon-box {
+            background: rgba(15, 23, 42, 0.92);
+            border: 1px solid rgba(234, 179, 8, 0.5);
+            box-shadow: 0 0 20px rgba(234, 179, 8, 0.3), inset 0 0 15px rgba(234, 179, 8, 0.1);
+        }
+        .neon-input {
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid rgba(234, 179, 8, 0.4);
+            color: #ffffff;
+        }
+        .neon-input:focus {
+            border-color: #fbbf24;
+            box-shadow: 0 0 10px rgba(251, 191, 36, 0.6);
+            outline: none;
+        }
+        .neon-btn {
+            background: linear-gradient(135deg, #d97706, #fbbf24);
+            color: #0f172a;
+            box-shadow: 0 0 15px rgba(251, 191, 36, 0.5);
+            transition: all 0.3s ease;
+        }
+        .neon-btn:hover {
+            box-shadow: 0 0 25px rgba(251, 191, 36, 0.8);
+            transform: translateY(-1px);
+        }
+    </style>
+</head>
+<body class="min-h-screen p-4 md:p-8 text-gray-100">
+
+    <!-- CONTAINER UTAMA ADMIN -->
+    <div class="max-w-6xl mx-auto">
+        
+        <!-- BAGIAN 1: LOGIN ADMIN -->
+        <div id="adminLoginSection" class="max-w-md mx-auto mt-20 neon-box rounded-2xl p-6 backdrop-blur-md">
+            <h2 class="text-2xl font-bold text-center text-amber-400 mb-6 tracking-wide drop-shadow-[0_0_10px_rgba(251,191,36,0.5)]">LOGIN ADMIN</h2>
+            <div id="loginError" class="hidden mb-4 p-3 bg-red-900/60 border border-red-500 text-red-200 text-sm rounded-lg"></div>
+            
+            <form id="loginForm" onsubmit="handleAdminLogin(event)" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-amber-300 mb-1">Email Admin</label>
+                    <input type="email" id="adminEmail" required class="w-full px-4 py-2 rounded-lg neon-input" placeholder="admin@gmail.com">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-amber-300 mb-1">Password</label>
+                    <input type="password" id="adminPassword" required class="w-full px-4 py-2 rounded-lg neon-input" placeholder="••••••">
+                </div>
+                <button type="submit" class="w-full py-2 rounded-lg font-bold neon-btn">
+                    MASUK SEBAGAI ADMIN
+                </button>
+            </form>
+        </div>
+
+        <!-- BAGIAN 2: DASHBOARD ADMIN (DAFTAR PENGAJUAN OFFDAY) -->
+        <div id="adminDashboard" class="hidden neon-box rounded-2xl p-6 backdrop-blur-md">
+            <div class="flex flex-col md:flex-row justify-between items-center mb-6 pb-4 border-b border-amber-500/30 gap-4">
+                <div>
+                    <h1 class="text-2xl font-bold text-amber-400">Dashboard Persetujuan Offday</h1>
+                    <p class="text-sm text-amber-200/70">Kelola dan pantau pengajuan libur staff</p>
+                </div>
+                <button onclick="handleAdminLogout()" class="px-4 py-2 bg-red-600/80 hover:bg-red-600 text-white rounded-lg text-sm font-semibold transition">
+                    Keluar Admin
+                </button>
+            </div>
+
+            <!-- Tabel Daftar Pengajuan -->
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="border-b border-amber-500/30 text-amber-300 text-sm">
+                            <th class="p-3">Email Staff</th>
+                            <th class="p-3">Tanggal Offday</th>
+                            <th class="p-3">Alasan</th>
+                            <th class="p-3">Status</th>
+                            <th class="p-3 text-center">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="offdayTableBody" class="text-sm divide-y divide-amber-500/10">
+                        <!-- Data akan dimuat otomatis via JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+            <div id="emptyState" class="hidden text-center py-8 text-gray-400">Belum ada pengajuan offday dari staff.</div>
+        </div>
+
+    </div>
+
+    <!-- SKRIP FIREBASE & LOGIKA ADMIN -->
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyDzGanmCbR1nMYzOr7CzhIlN1E_9lMUzE",
+            authDomain: "offday-58776.firebaseapp.com",
+            projectId: "offday-58776",
+            storageBucket: "offday-58776.firebasestorage.app",
+            messagingSenderId: "550746205844",
+            appId: "1:550746205844:web:5cd9b900d628f4d612ce81",
+            measurementId: "G-DMRPRTGYWG"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        // Login Admin
+        async function handleAdminLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('adminEmail').value.trim();
+            const password = document.getElementById('adminPassword').value;
+            const errorDiv = document.getElementById('loginError');
+            errorDiv.classList.add('hidden');
+
+            try {
+                await auth.signInWithEmailAndPassword(email, password);
+                // Cek apakah berhasil login, lalu buka dashboard
+                showAdminDashboard();
+            } catch (err) {
+                errorDiv.innerText = "Login gagal: Pastikan email dan password admin benar.";
+                errorDiv.classList.remove('hidden');
+            }
+        }
+
+        function showAdminDashboard() {
+            document.getElementById('adminLoginSection').classList.add('hidden');
+            document.getElementById('adminDashboard').classList.remove('hidden');
+            loadOffdayRequests();
+        }
+
+        async function handleAdminLogout() {
+            await auth.signOut();
+            document.getElementById('adminDashboard').classList.add('hidden');
+            document.getElementById('adminLoginSection').classList.remove('hidden');
+            document.getElementById('loginForm').reset();
+        }
+
+        // Ambil Data Pengajuan Offday dari Firestore
+        function loadOffdayRequests() {
+            const tableBody = document.getElementById('offdayTableBody');
+            const emptyState = document.getElementById('emptyState');
+
+            db.collection('pengajuan_offday').orderBy('timestamp', 'desc').onSnapshot((snapshot) => {
+                tableBody.innerHTML = '';
+                if (snapshot.empty) {
+                    emptyState.classList.remove('hidden');
+                    return;
+                }
+                emptyState.classList.add('hidden');
+
+                snapshot.forEach((doc) => {
+                    const data = doc.data();
+                    const id = doc.id;
+                    let badgeColor = "bg-yellow-500/20 text-yellow-300 border-yellow-500/50";
+                    if (data.status === "Disetujui") badgeColor = "bg-green-500/20 text-green-300 border-green-500/50";
+                    if (data.status === "Ditolak") badgeColor = "bg-red-500/20 text-red-300 border-red-500/50";
+
+                    const row = `
+                        <tr class="hover:bg-amber-500/5 transition">
+                            <td class="p-3 font-medium text-amber-200">${data.email}</td>
+                            <td class="p-3">${data.tanggal}</td>
+                            <td class="p-3 text-gray-300">${data.alasan}</td>
+                            <td class="p-3">
+                                <span class="px-2.5 py-1 text-xs rounded-full border ${badgeColor} font-semibold">
+                                    ${data.status}
+                                </span>
+                            </td>
+                            <td class="p-3 text-center space-x-2">
+                                <button onclick="updateStatus('${id}', 'Disetujui')" class="px-3 py-1 bg-green-600 hover:bg-green-500 text-white text-xs font-bold rounded shadow">Setujui</button>
+                                <button onclick="updateStatus('${id}', 'Ditolak')" class="px-3 py-1 bg-red-600 hover:bg-red-500 text-white text-xs font-bold rounded shadow">Tolak</button>
+                            </td>
+                        </tr>
+                    `;
+                    tableBody.innerHTML += row;
+                });
+            });
+        }
+
+        // Update Status Pengajuan (Disetujui / Ditolak)
+        async function updateStatus(id, newStatus) {
+            try {
+                await db.collection('pengajuan_offday').doc(id).update({
+                    status: newStatus
+                });
+            } catch (err) {
+                alert("Gagal memperbarui status: " + err.message);
+            }
+        }
+    </script>
+</body>
+</html>
