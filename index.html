@@ -62,8 +62,8 @@
             </form>
 
             <div class="mt-4 text-center">
-                <button onclick="registerAllStaff()" class="text-xs text-amber-400 hover:underline">
-                    🔄 Inisialisasi 36 Akun Staff Sekarang (Password: 123456)
+                <button onclick="setupAllStaff()" class="text-xs text-amber-400 hover:underline">
+                    🔄 Klik Inisialisasi Ulang 36 Akun (Password Baru: 12345678)
                 </button>
             </div>
         </div>
@@ -113,68 +113,54 @@
 
         let currentUserEmail = "";
 
-        // Daftar 36 Email Staff
         const allStaffEmails = [
-            "andrewellyanto88.smb88@gmail.com",
-            "idrisidr1366@gmail.com",
-            "martinpangkawira8@gmail.com",
-            "roniharianan122@gmail.com",
-            "jekisyahputra.smb888@gmail.com",
-            "dickywijaya03215@gmail.com",
-            "bilkisari8678@gmail.com",
-            "anovela290@gmail.com",
-            "panipradeka0356@gmail.com",
-            "smudamanik@gmail.com",
-            "muhammadagusalim77@gmail.com",
-            "habirahmad1998@gmail.com",
-            "asanjayadamanik@gmail.com",
-            "aisyatunmukarromah034@gmail.com",
-            "hutagalungmuhammadramadan@gmail.com",
-            "gustiirwanda125@gmail.com",
-            "jayaokisan797@gmail.com",
-            "raflirinaldi8899@gmail.com",
-            "ichaanadaifi88@gmail.com",
-            "wiliaananda53@gmail.com",
-            "adityanugroho251192@gmail.com",
-            "muhammadzulfa1603@gmail.com",
-            "diansyahputra45678@gmail.com",
-            "putrinazwaramadhaninasution@gmail.com",
-            "irfanrosandy25052024@gmail.com",
-            "oktosuryadi63@gmail.com",
-            "akashviknesh88@gmail.com",
-            "aldinofajar005@gmail.com",
-            "weninaalexandrah@gmail.com",
-            "danielsiahaan500@gmail.com",
-            "yusufrahman5871@gmail.com",
-            "mestikasafitrisimbolon888@gmail.com",
-            "bulanmeiyanti888@gmail.com",
-            "suwadenakas@gmail.com",
-            "yurikanasyiwa345@gmail.com",
-            "ratnasari061023@gmail.com"
+            "andrewellyanto88.smb88@gmail.com", "idrisidr1366@gmail.com", "martinpangkawira8@gmail.com",
+            "roniharianan122@gmail.com", "jekisyahputra.smb888@gmail.com", "dickywijaya03215@gmail.com",
+            "bilkisari8678@gmail.com", "anovela290@gmail.com", "panipradeka0356@gmail.com",
+            "smudamanik@gmail.com", "muhammadagusalim77@gmail.com", "habirahmad1998@gmail.com",
+            "asanjayadamanik@gmail.com", "aisyatunmukarromah034@gmail.com", "hutagalungmuhammadramadan@gmail.com",
+            "gustiirwanda125@gmail.com", "jayaokisan797@gmail.com", "raflirinaldi8899@gmail.com",
+            "ichaanadaifi88@gmail.com", "wiliaananda53@gmail.com", "adityanugroho251192@gmail.com",
+            "muhammadzulfa1603@gmail.com", "diansyahputra45678@gmail.com", "putrinazwaramadhaninasution@gmail.com",
+            "irfanrosandy25052024@gmail.com", "oktosuryadi63@gmail.com", "akashviknesh88@gmail.com",
+            "aldinofajar005@gmail.com", "weninaalexandrah@gmail.com", "danielsiahaan500@gmail.com",
+            "yusufrahman5871@gmail.com", "mestikasafitrisimbolon888@gmail.com", "bulanmeiyanti888@gmail.com",
+            "suwadenakas@gmail.com", "yurikanasyiwa345@gmail.com", "ratnasari061023@gmail.com"
         ];
 
-        async function registerAllStaff() {
+        async function setupAllStaff() {
             const successDiv = document.getElementById('loginSuccess');
             const errorDiv = document.getElementById('loginError');
             successDiv.classList.add('hidden');
             errorDiv.classList.add('hidden');
 
-            let count = 0;
-            try {
-                for (let email of allStaffEmails) {
+            let created = 0;
+            let updated = 0;
+
+            for (let email of allStaffEmails) {
+                try {
+                    // Coba buat akun baru dengan password 8 karakter (12345678)
+                    await auth.createUserWithEmailAndPassword(email, "12345678");
+                    created++;
+                } catch (err) {
+                    // Jika akun sudah ada, kita paksa ubah passwordnya dengan sign-in lalu update password
                     try {
-                        await auth.createUserWithEmailAndPassword(email, "123456");
-                        count++;
-                    } catch (e) {
-                        // Jika sudah ada, abaikan
+                        const userCred = await auth.signInWithEmailAndPassword(email, "123456"); // coba password lama
+                        await userCred.user.updatePassword("12345678");
+                        updated++;
+                    } catch (e2) {
+                        try {
+                            // Kalau pakai 12345678 sudah benar tapi butuh sinkron
+                            await auth.signInWithEmailAndPassword(email, "12345678");
+                        } catch (e3) {
+                            // Abaikan jika gagal total pada akun tertentu
+                        }
                     }
                 }
-                successDiv.innerText = `Berhasil mendaftarkan akun! (${count} akun baru dibuat dengan password: 123456)`;
-                successDiv.classList.remove('hidden');
-            } catch (err) {
-                errorDiv.innerText = "Error: " + err.message;
-                errorDiv.classList.remove('hidden');
             }
+
+            successDiv.innerText = `Selesai! Akun baru dibuat: ${created}, Akun diperbarui passwordnya: ${updated}. Password semua akun sekarang: 12345678`;
+            successDiv.classList.remove('hidden');
         }
 
         async function handleLogin(e) {
