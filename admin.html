@@ -3,183 +3,255 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - Offday System</title>
+    <title>Enterprise Admin Dashboard - Shift, Offday & Cuti Management</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Firebase SDK Compat -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
         body {
-            background-color: #0d0d0d;
-            background-image: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)), url('https://demigod-assets.sgp1.cdn.digitaloceanspaces.com/bgassets/goltogel.webp');
+            font-family: 'Inter', sans-serif;
+            background-color: #090a0f;
+            background-image: linear-gradient(rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0.75)), url('https://demigod-assets.sgp1.cdn.digitaloceanspaces.com/bgassets/goltogel.webp');
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
-            color: #facc15;
+            color: #e2e8f0;
+            min-height: 100vh;
         }
-        .font-digital { font-family: 'Share Tech Mono', monospace; }
+        .font-mono-code { font-family: 'JetBrains Mono', monospace; }
         
-        @keyframes rotateNeon {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+        /* Container transparan agar background terlihat */
+        .card-container {
+            background: rgba(12, 14, 20, 0.65);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(250, 204, 21, 0.25);
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.7);
         }
 
-        .neon-border-wrapper {
-            position: relative;
-            border-radius: 0.75rem;
-            padding: 2px;
-            background: linear-gradient(60deg, #facc15, #854d0e, #facc15, #713f12, #facc15);
-            background-size: 300% 300%;
-            animation: rotateNeon 6s ease infinite;
-            box-shadow: 0 0 15px rgba(250, 204, 21, 0.3);
+        .input-pro {
+            background: rgba(8, 9, 13, 0.75);
+            border: 1px solid rgba(250, 204, 21, 0.3);
+            color: #f8fafc;
+            transition: all 0.25s ease;
         }
-
-        .neon-content {
-            background: rgba(15, 15, 15, 0.95);
-            border-radius: calc(0.75rem - 2px);
-        }
-
-        .neon-text {
-            color: #facc15;
-            text-shadow: 0 0 8px rgba(250, 204, 21, 0.6);
-        }
-        .neon-input {
-            background: rgba(0, 0, 0, 0.8);
-            border: 1px solid #facc15;
-            color: #facc15;
-        }
-        .neon-input:focus {
+        .input-pro:focus {
             outline: none;
-            box-shadow: 0 0 10px #facc15;
+            border-color: #facc15;
+            box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.2);
         }
-        input[type="date"]::-webkit-calendar-picker-indicator {
-            filter: invert(1) hue-rotate(30deg) brightness(1.5);
+
+        input[type="date"]::-webkit-calendar-picker-indicator,
+        input[type="month"]::-webkit-calendar-picker-indicator {
+            filter: invert(0.8) sepia(1) saturate(5) hue-rotate(5deg);
             cursor: pointer;
-            transform: scale(1.2);
         }
-        .neon-btn {
-            background: #facc15;
-            color: #000;
-            font-weight: bold;
-            box-shadow: 0 0 10px rgba(250, 204, 21, 0.5);
+
+        .btn-pro {
+            background: linear-gradient(135deg, #facc15 0%, #ca8a04 100%);
+            color: #090a0f;
+            font-weight: 600;
             transition: all 0.2s ease;
         }
-        .neon-btn:hover {
-            background: #fef08a;
-            box-shadow: 0 0 20px #facc15;
+        .btn-pro:hover {
+            filter: brightness(1.1);
+            box-shadow: 0 4px 15px rgba(250, 204, 21, 0.35);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(9, 10, 15, 0.5); }
+        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+
+        #matrixTable th, #matrixTable td {
+            border-bottom: 1px solid rgba(250, 204, 21, 0.12);
+            border-right: 1px solid rgba(250, 204, 21, 0.06);
         }
     </style>
 </head>
-<body class="min-h-screen font-sans">
+<body class="antialiased">
 
-    <div class="max-w-7xl mx-auto px-4 py-8">
-        <header class="mb-8 text-center">
-            <div class="neon-border-wrapper mb-4">
-                <div class="neon-content px-6 py-2 flex justify-between items-center text-sm font-digital">
-                    <div>MODE: <span class="text-white font-bold">ADMINISTRATOR</span></div>
-                    <div class="neon-text"><span id="digitalClock">00:00:00</span> &bull; <span id="digitalDate">--/--/----</span></div>
-                    <div><a href="staff.html" class="text-yellow-300 hover:underline">Buka View Staff &rarr;</a></div>
+    <div class="max-w-[98%] mx-auto px-4 py-6">
+        <!-- Header Section -->
+        <header class="mb-6">
+            <div class="card-container rounded-xl px-6 py-3 flex flex-wrap justify-between items-center gap-4 mb-4">
+                <div class="flex items-center space-x-3">
+                    <span class="w-3 h-3 bg-yellow-400 rounded-full animate-pulse"></span>
+                    <span class="text-xs font-mono-code tracking-wider text-yellow-400 uppercase font-bold">SYSTEM STATUS: ONLINE (SECURE ADMIN)</span>
+                </div>
+                <div class="text-xs font-mono-code text-slate-300 flex items-center gap-4">
+                    <span><strong id="digitalDate" class="text-white">--/--/----</strong> &bull; <strong id="digitalClock" class="text-yellow-400">00:00:00</strong></span>
+                    <a href="staff.html" class="text-yellow-400 hover:text-yellow-300 font-semibold underline underline-offset-4 transition">&rarr; Switch to Staff View</a>
                 </div>
             </div>
-            
-            <h1 class="text-3xl font-bold font-digital tracking-wide neon-text">DASHBOARD ADMIN OFFDAY</h1>
-            <p class="text-yellow-200/80 font-medium mt-1 font-digital text-sm">ATURAN: MAKS. 2X OFFDAY/BULAN | 1 PAGI & 1 MALAM PER DIVISI | JEDA MINIMAL 7 HARI | CS & KAPTEN PAGI TIDAK BISA KAMIS</p>
+
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-2">
+                <div>
+                    <h1 class="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+                        <span>Manajemen Operasional Shift & Cuti</span>
+                    </h1>
+                    <p class="text-xs text-slate-300 mt-1 font-mono-code">Sistem Penjadwalan Berkelanjutan, Offday, Cuti Otomatis Beruntun (CS/Kapten: 14 Hari, Kasir: 12 Hari), & Rotasi</p>
+                </div>
+            </div>
         </header>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
             
-            <!-- Form Input Admin -->
+            <!-- Sidebar Form Input -->
             <div class="lg:col-span-1">
-                <div class="neon-border-wrapper sticky top-6">
-                    <div class="neon-content p-6">
-                        <h2 class="text-base font-bold mb-4 font-digital tracking-wide neon-text">FORM PENGAJUAN OFFDAY</h2>
-                        <form id="offdayForm" class="space-y-4 font-digital">
-                            <div>
-                                <label class="block text-xs font-bold mb-1">DIVISI</label>
-                                <select id="divisi" required class="w-full px-3 py-2 rounded-lg neon-input text-sm" onchange="updateKaryawanList()">
-                                    <option value="" class="bg-black">Pilih Divisi</option>
-                                    <option value="CS" class="bg-black">Customer Service (CS)</option>
-                                    <option value="KAPTEN" class="bg-black">Kapten</option>
-                                    <option value="KASIR" class="bg-black">Kasir</option>
-                                </select>
-                            </div>
-
-                            <div>
-                                <label class="block text-xs font-bold mb-1">NAMA KARYAWAN</label>
-                                <select id="nama" required class="w-full px-3 py-2 rounded-lg neon-input text-sm">
-                                    <option value="" class="bg-black">Pilih Divisi Terlebih Dahulu</option>
-                                </select>
-                            </div>
-
-                            <div>
-                                <label class="block text-xs font-bold mb-1">TANGGAL OFFDAY</label>
-                                <input type="date" id="tanggal" required class="w-full px-3 py-2 rounded-lg neon-input text-sm cursor-pointer">
-                            </div>
-
-                            <div>
-                                <label class="block text-xs font-bold mb-1">SHIFT</label>
-                                <select id="shift" required class="w-full px-3 py-2 rounded-lg neon-input text-sm">
-                                    <option value="" class="bg-black">Pilih Shift</option>
-                                    <option value="Pagi" class="bg-black">Pagi (Maks. 1 Orang / Divisi)</option>
-                                    <option value="Malam" class="bg-black">Malam (Maks. 1 Orang / Divisi)</option>
-                                </select>
-                            </div>
-
-                            <button type="submit" class="w-full py-2.5 px-4 rounded-lg neon-btn tracking-wider uppercase text-sm">
-                                SIMPAN OFFDAY
-                            </button>
-                        </form>
-                        <div id="alertBox" class="mt-4 hidden p-3 rounded-lg text-sm font-digital"></div>
+                <div class="card-container rounded-xl p-5 sticky top-6">
+                    <div class="flex items-center justify-between pb-3 mb-4 border-b border-yellow-500/20">
+                        <h2 class="text-sm font-bold tracking-wide text-yellow-400 font-mono-code uppercase">Form Panel Input</h2>
+                        <span class="text-[10px] bg-yellow-400/20 text-yellow-300 px-2 py-0.5 rounded font-mono-code border border-yellow-400/30">Admin Only</span>
                     </div>
+
+                    <form id="offdayForm" class="space-y-4 text-xs font-mono-code">
+                        <div>
+                            <label class="block font-semibold mb-1 text-slate-200">JENIS INPUT</label>
+                            <select id="jenisInput" required class="w-full px-3 py-2.5 rounded-lg input-pro text-xs" onchange="toggleJenisInput()">
+                                <option value="SetShift" class="bg-slate-900">Input Shift Awal (Berkelanjutan)</option>
+                                <option value="Offday" class="bg-slate-900">Pengajuan Offday</option>
+                                <option value="Cuti" class="bg-slate-900">Pengajuan Cuti (Otomatis Beruntun)</option>
+                                <option value="ChangeShift" class="bg-slate-900">Change Shift (Rotasi)</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block font-semibold mb-1 text-slate-200">DIVISI</label>
+                            <select id="divisi" required class="w-full px-3 py-2.5 rounded-lg input-pro text-xs" onchange="updateKaryawanList()">
+                                <option value="" class="bg-slate-900">-- Pilih Divisi --</option>
+                                <option value="CS" class="bg-slate-900">Customer Service (CS)</option>
+                                <option value="KAPTEN" class="bg-slate-900">Kapten</option>
+                                <option value="KASIR" class="bg-slate-900">Kasir</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block font-semibold mb-1 text-slate-200">NAMA KARYAWAN</label>
+                            <select id="nama" required class="w-full px-3 py-2.5 rounded-lg input-pro text-xs" onchange="checkSisaCutiInfo()">
+                                <option value="" class="bg-slate-900">-- Pilih Divisi Terlebih Dahulu --</option>
+                            </select>
+                            <div id="infoSisaCuti" class="mt-1.5 text-[11px] text-yellow-400 font-semibold hidden"></div>
+                        </div>
+
+                        <div id="tanggalGroup">
+                            <label class="block font-semibold mb-1 text-slate-200" id="labelTanggal">TANGGAL MULAI</label>
+                            <input type="date" id="tanggal" required class="w-full px-3 py-2.5 rounded-lg input-pro text-xs cursor-pointer">
+                        </div>
+
+                        <div id="shiftGroup">
+                            <label class="block font-semibold mb-1 text-slate-200" id="labelShift">SHIFT</label>
+                            <select id="shift" required class="w-full px-3 py-2.5 rounded-lg input-pro text-xs">
+                                <option value="" class="bg-slate-900">-- Pilih Shift --</option>
+                                <option value="Pagi" class="bg-slate-900">Pagi (Terus Pagi)</option>
+                                <option value="Malam" class="bg-slate-900">Malam (Terus Malam)</option>
+                            </select>
+                        </div>
+
+                        <div id="changeShiftGroup" class="hidden">
+                            <label class="block font-semibold mb-1 text-slate-200">KETERANGAN ROTASI</label>
+                            <select id="changeShiftType" class="w-full px-3 py-2.5 rounded-lg input-pro text-xs">
+                                <option value="CHANGE SHIFT" class="bg-slate-900">CHANGE SHIFT (Pagi &rarr; Malam)</option>
+                                <option value="CHANGE MALAM" class="bg-slate-900">CHANGE MALAM (Malam &rarr; Pagi)</option>
+                            </select>
+                        </div>
+
+                        <button type="submit" class="w-full py-3 px-4 rounded-lg btn-pro tracking-wider uppercase text-xs font-bold shadow-lg mt-2">
+                            SIMPAN DATA
+                        </button>
+                    </form>
+                    
+                    <div id="alertBox" class="mt-4 hidden p-3 rounded-lg text-xs font-mono-code"></div>
                 </div>
             </div>
 
-            <!-- Tabel & Filter -->
-            <div class="lg:col-span-2 space-y-6">
-                <div class="neon-border-wrapper">
-                    <div class="neon-content p-4 flex flex-col sm:flex-row justify-between items-center gap-4 font-digital">
-                        <div class="flex items-center gap-2 w-full sm:w-auto">
-                            <label class="text-xs font-bold">FILTER DIVISI:</label>
-                            <select id="filterDivisi" class="px-3 py-1.5 rounded-lg text-sm neon-input" onchange="renderTable()">
-                                <option value="ALL" class="bg-black">Semua Divisi</option>
-                                <option value="CS" class="bg-black">CS</option>
-                                <option value="KAPTEN" class="bg-black">KAPTEN</option>
-                                <option value="KASIR" class="bg-black">KASIR</option>
+            <!-- Main Workspace / Matrix Table -->
+            <div class="lg:col-span-3 space-y-4">
+                <!-- Control Bar -->
+                <div class="card-container rounded-xl p-4 flex flex-wrap justify-between items-center gap-4 font-mono-code text-xs">
+                    <div class="flex flex-wrap items-center gap-4">
+                        <div>
+                            <label class="font-semibold block mb-1 text-slate-300">PERIODE BULAN:</label>
+                            <input type="month" id="filterBulan" class="px-3 py-2 rounded-lg input-pro text-xs font-mono-code" onchange="renderMatrix()">
+                        </div>
+                        <div>
+                            <label class="font-semibold block mb-1 text-slate-300">FILTER DIVISI:</label>
+                            <select id="filterDivisi" class="px-3 py-2 rounded-lg input-pro text-xs font-mono-code" onchange="renderMatrix()">
+                                <option value="CS" class="bg-slate-900">Customer Service (CS)</option>
+                                <option value="KAPTEN" class="bg-slate-900">Kapten</option>
+                                <option value="KASIR" class="bg-slate-900">Kasir</option>
                             </select>
                         </div>
-                        <button onclick="resetData()" class="text-xs bg-red-950/80 text-red-400 border border-red-600 hover:bg-red-900 px-3 py-2 rounded-lg font-bold transition tracking-wide shadow-[0_0_8px_rgba(239,68,68,0.4)]">
-                            RESET SEMUA DATA
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="bukaModalExtraCuti()" class="px-3.5 py-2 bg-yellow-600/60 text-yellow-200 border border-yellow-500/80 hover:bg-yellow-600/80 rounded-lg font-bold transition tracking-wide text-xs shadow">
+                            + TAMBAH KUOTA CUTI MANUAL
+                        </button>
+                        <button onclick="resetData()" class="px-3.5 py-2 bg-red-950/60 text-red-300 border border-red-800/80 hover:bg-red-900/70 rounded-lg font-bold transition tracking-wide text-xs shadow">
+                            RESET DATABASE
                         </button>
                     </div>
                 </div>
 
-                <div class="neon-border-wrapper">
-                    <div class="neon-content overflow-hidden">
-                        <div class="px-6 py-4 border-b border-yellow-500/30">
-                            <h2 class="text-base font-bold font-digital tracking-wide neon-text">DAFTAR JADWAL OFFDAY (ADMIN)</h2>
+                <!-- Matrix Table Card -->
+                <div class="card-container rounded-xl overflow-hidden">
+                    <div class="px-6 py-4 border-b border-yellow-500/20 flex justify-between items-center flex-wrap gap-3 font-mono-code">
+                        <h2 class="text-sm font-bold tracking-wide text-yellow-400 uppercase">Rekapitulasi Shift & Status Bulanan</h2>
+                        <div class="text-[11px] text-slate-200 flex items-center gap-4 flex-wrap">
+                            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 bg-red-600 rounded-sm"></span> OFFDAY</span>
+                            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 bg-blue-600 rounded-sm"></span> CUTI</span>
+                            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 bg-emerald-600 rounded-sm"></span> PAGI</span>
+                            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 bg-slate-600 rounded-sm"></span> MALAM</span>
+                            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 bg-purple-600 rounded-sm"></span> CHANGE SHIFT</span>
                         </div>
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-left border-collapse">
-                                <thead>
-                                    <tr class="bg-yellow-500/10 text-yellow-300 text-xs font-bold font-digital tracking-wider border-b border-yellow-500/30">
-                                        <th class="px-6 py-3">TANGGAL</th>
-                                        <th class="px-6 py-3">DIVISI</th>
-                                        <th class="px-6 py-3">SHIFT PAGI (1/1)</th>
-                                        <th class="px-6 py-3">SHIFT MALAM (1/1)</th>
-                                        <th class="px-6 py-3 text-center">AKSI</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="tableBody" class="divide-y divide-yellow-500/20 text-sm font-digital">
-                                    <!-- Data Firebase -->
-                                </tbody>
-                            </table>
-                        </div>
+                    </div>
+                    
+                    <div class="overflow-x-auto max-h-[620px]">
+                        <table id="matrixTable" class="w-full text-left border-collapse text-[11px] font-mono-code whitespace-nowrap">
+                            <!-- Rendered via JavaScript -->
+                        </table>
                     </div>
                 </div>
             </div>
 
+        </div>
+    </div>
+
+    <!-- Modal Tambah Kuota Cuti Manual -->
+    <div id="modalExtraCuti" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="card-container rounded-xl p-6 max-w-md w-full border border-yellow-500/40">
+            <h3 class="text-sm font-bold text-yellow-400 font-mono-code uppercase mb-3 pb-2 border-b border-yellow-500/20">Input Penambahan Kuota Cuti Manual</h3>
+            <p class="text-xs text-slate-300 mb-4 font-mono-code">Jika jatah kuota cuti otomatis beruntun reguler (CS/Kapten: 14 hari, Kasir: 12 hari) sudah habis dan ada penambahan, input jumlah tambahannya di sini.</p>
+            
+            <div class="space-y-3 text-xs font-mono-code">
+                <div>
+                    <label class="block font-semibold mb-1 text-slate-200">DIVISI</label>
+                    <select id="modalDivisi" class="w-full px-3 py-2 rounded-lg input-pro text-xs" onchange="updateModalKaryawanList()">
+                        <option value="">-- Pilih Divisi --</option>
+                        <option value="CS">Customer Service (CS)</option>
+                        <option value="KAPTEN">Kapten</option>
+                        <option value="KASIR">Kasir</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block font-semibold mb-1 text-slate-200">NAMA KARYAWAN</label>
+                    <select id="modalNama" class="w-full px-3 py-2 rounded-lg input-pro text-xs">
+                        <option value="">-- Pilih Divisi Dulu --</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block font-semibold mb-1 text-slate-200">JUMLAH TAMBAHAN HARI CUTI</label>
+                    <input type="number" id="modalJumlahHari" min="1" value="1" class="w-full px-3 py-2 rounded-lg input-pro text-xs">
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-2 mt-6">
+                <button onclick="tutupModalExtraCuti()" class="px-4 py-2 bg-slate-800 text-slate-300 rounded-lg text-xs font-mono-code hover:bg-slate-700">Batal</button>
+                <button onclick="simpanExtraCuti()" class="px-4 py-2 btn-pro rounded-lg text-xs font-mono-code font-bold">Simpan Penambahan</button>
+            </div>
         </div>
     </div>
 
@@ -213,6 +285,10 @@
         setInterval(updateClock, 1000);
         updateClock();
 
+        const now = new Date();
+        const currentYearMonth = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+        document.getElementById('filterBulan').value = currentYearMonth;
+
         const karyawanData = {
             "CS": [
                 "ANDRE WELLYANTO", "MARTIN PANGKAWIRA", "DICKY WIJAYA", 
@@ -236,110 +312,401 @@
         };
 
         let offdayData = {};
+        let shiftStartData = {}; 
+        let extraCutiData = {};
+
         const form = document.getElementById('offdayForm');
+        const jenisInput = document.getElementById('jenisInput');
         const divisiSelect = document.getElementById('divisi');
         const namaSelect = document.getElementById('nama');
+        const tanggalGroup = document.getElementById('tanggalGroup');
+        const labelTanggal = document.getElementById('labelTanggal');
+        const tanggalInput = document.getElementById('tanggal');
+        const shiftGroup = document.getElementById('shiftGroup');
+        const labelShift = document.getElementById('labelShift');
+        const shiftSelect = document.getElementById('shift');
+        const changeShiftGroup = document.getElementById('changeShiftGroup');
         const alertBox = document.getElementById('alertBox');
-        const tableBody = document.getElementById('tableBody');
         const filterDivisi = document.getElementById('filterDivisi');
+        const filterBulan = document.getElementById('filterBulan');
+        const matrixTable = document.getElementById('matrixTable');
+        const infoSisaCuti = document.getElementById('infoSisaCuti');
 
-        rtdb.ref('offdayData_v5').on('value', (snapshot) => {
+        rtdb.ref('offdayData_v6').on('value', (snapshot) => {
             offdayData = snapshot.val() || {};
-            renderTable();
+            renderMatrix();
         });
+
+        rtdb.ref('shiftStart_v6').on('value', (snapshot) => {
+            shiftStartData = snapshot.val() || {};
+            renderMatrix();
+        });
+
+        rtdb.ref('extraCuti_v6').on('value', (snapshot) => {
+            extraCutiData = snapshot.val() || {};
+            checkSisaCutiInfo();
+        });
+
+        function toggleJenisInput() {
+            const val = jenisInput.value;
+            if (val === 'ChangeShift') {
+                tanggalGroup.classList.remove('hidden');
+                tanggalInput.setAttribute('required', 'true');
+                labelTanggal.textContent = "TANGGAL CHANGE SHIFT";
+                shiftGroup.classList.add('hidden');
+                shiftSelect.removeAttribute('required');
+                changeShiftGroup.classList.remove('hidden');
+            } else if (val === 'SetShift') {
+                tanggalGroup.classList.remove('hidden');
+                tanggalInput.setAttribute('required', 'true');
+                labelTanggal.textContent = "TANGGAL MULAI SHIFT";
+                shiftGroup.classList.remove('hidden');
+                labelShift.textContent = "SHIFT AWAL (BERKELANJUTAN)";
+                shiftSelect.setAttribute('required', 'true');
+                changeShiftGroup.classList.add('hidden');
+            } else if (val === 'Cuti') {
+                tanggalGroup.classList.remove('hidden');
+                tanggalInput.setAttribute('required', 'true');
+                labelTanggal.textContent = "TANGGAL MULAI CUTI";
+                shiftGroup.classList.add('hidden');
+                shiftSelect.removeAttribute('required');
+                changeShiftGroup.classList.add('hidden');
+            } else { 
+                tanggalGroup.classList.remove('hidden');
+                tanggalInput.setAttribute('required', 'true');
+                labelTanggal.textContent = "TANGGAL OFFDAY";
+                shiftGroup.classList.remove('hidden');
+                labelShift.textContent = "SHIFT OFFDAY";
+                shiftSelect.setAttribute('required', 'true');
+                changeShiftGroup.classList.add('hidden');
+            }
+        }
 
         function updateKaryawanList() {
             const selectedDivisi = divisiSelect.value;
-            namaSelect.innerHTML = '<option value="" class="bg-black">Pilih Karyawan</option>';
+            namaSelect.innerHTML = '<option value="">-- Pilih Karyawan --</option>';
             if (selectedDivisi && karyawanData[selectedDivisi]) {
                 karyawanData[selectedDivisi].forEach(nama => {
                     const option = document.createElement('option');
                     option.value = nama;
                     option.textContent = nama;
-                    option.className = "bg-black";
+                    option.className = "bg-slate-900";
                     namaSelect.appendChild(option);
                 });
             }
+            checkSisaCutiInfo();
+        }
+
+        function getBatasCuti(divisi) {
+            if (divisi === 'CS' || divisi === 'KAPTEN') return 14;
+            if (divisi === 'KASIR') return 12;
+            return 12;
+        }
+
+        function hitungCutiTerpakai(nama, divisi, tahunBulan) {
+            let total = 0;
+            for (let tgl in offdayData) {
+                if (tgl.startsWith(tahunBulan)) {
+                    if (offdayData[tgl][divisi] && offdayData[tgl][divisi].Cuti && offdayData[tgl][divisi].Cuti[nama]) {
+                        total++;
+                    }
+                }
+            }
+            return total;
+        }
+
+        function checkSisaCutiInfo() {
+            const divisi = divisiSelect.value;
+            const nama = namaSelect.value;
+            const selectedMonth = filterBulan.value;
+
+            if (!divisi || !nama || !selectedMonth) {
+                infoSisaCuti.classList.add('hidden');
+                return;
+            }
+
+            const maxReguler = getBatasCuti(divisi);
+            const extra = (extraCutiData[selectedMonth] && extraCutiData[selectedMonth][nama]) ? Number(extraCutiData[selectedMonth][nama]) : 0;
+            const totalMaks = maxReguler + extra;
+            const terpakai = hitungCutiTerpakai(nama, divisi, selectedMonth);
+            const sisa = totalMaks - terpakai;
+
+            infoSisaCuti.textContent = `Info Cuti (${selectedMonth}) -> Terpakai: ${terpakai} | Sisa Kuota: ${sisa} hari (Maks: ${totalMaks} hari)`;
+            infoSisaCuti.classList.remove('hidden');
         }
 
         function showAlert(message, type = 'error') {
             alertBox.textContent = message;
-            alertBox.classList.remove('hidden', 'bg-red-950', 'text-red-300', 'bg-green-950', 'text-green-300');
+            alertBox.classList.remove('hidden', 'bg-red-950/80', 'text-red-300', 'border-red-600', 'bg-emerald-950/80', 'text-emerald-300', 'border-emerald-600');
             if (type === 'error') {
-                alertBox.classList.add('bg-red-950', 'text-red-300', 'border', 'border-red-500');
+                alertBox.classList.add('bg-red-950/80', 'text-red-300', 'border', 'border-red-600');
             } else {
-                alertBox.classList.add('bg-green-950', 'text-green-300', 'border', 'border-green-500');
+                alertBox.classList.add('bg-emerald-950/80', 'text-emerald-300', 'border', 'border-emerald-600');
             }
             setTimeout(() => { alertBox.classList.add('hidden'); }, 5000);
         }
 
-        function renderTable() {
-            tableBody.innerHTML = '';
-            const filter = filterDivisi.value;
-            const dates = Object.keys(offdayData).sort();
-            let rowsToDisplay = [];
-
-            dates.forEach(tanggal => {
-                const divisions = Object.keys(offdayData[tanggal]);
-                divisions.forEach(divisi => {
-                    if (filter === 'ALL' || filter === divisi) {
-                        const dataDiv = offdayData[tanggal][divisi];
-                        if (dataDiv.Pagi || dataDiv.Malam) {
-                            rowsToDisplay.push({ tanggal, divisi, Pagi: dataDiv.Pagi, Malam: dataDiv.Malam });
-                        }
-                    }
+        function bukaModalExtraCuti() {
+            document.getElementById('modalExtraCuti').classList.remove('hidden');
+        }
+        function tutupModalExtraCuti() {
+            document.getElementById('modalExtraCuti').classList.add('hidden');
+        }
+        function updateModalKaryawanList() {
+            const div = document.getElementById('modalDivisi').value;
+            const modNama = document.getElementById('modalNama');
+            modNama.innerHTML = '<option value="">-- Pilih Karyawan --</option>';
+            if (div && karyawanData[div]) {
+                karyawanData[div].forEach(n => {
+                    const opt = document.createElement('option');
+                    opt.value = n;
+                    opt.textContent = n;
+                    opt.className = "bg-slate-900";
+                    modNama.appendChild(opt);
                 });
-            });
+            }
+        }
 
-            if (rowsToDisplay.length === 0) {
-                tableBody.innerHTML = `<tr><td colspan="5" class="px-6 py-6 text-center text-yellow-500/60">BELUM ADA DATA OFFDAY YANG TERCATAT.</td></tr>`;
+        function simpanExtraCuti() {
+            const div = document.getElementById('modalDivisi').value;
+            const n = document.getElementById('modalNama').value;
+            const addDays = Number(document.getElementById('modalJumlahHari').value);
+            const selectedMonth = filterBulan.value;
+
+            if (!div || !n || !addDays) {
+                alert("Semua field pada modal harus diisi dengan benar.");
                 return;
             }
 
-            rowsToDisplay.forEach(item => {
-                const tr = document.createElement('tr');
-                let html = `<td class="px-6 py-4 font-bold text-white">${item.tanggal}</td>`;
-                html += `<td class="px-6 py-4"><span class="px-2.5 py-0.5 rounded text-xs font-bold bg-yellow-500/20 text-yellow-300 border border-yellow-500/40">${item.divisi}</span></td>`;
-                html += item.Pagi ? `<td class="px-6 py-4"><span class="px-2 py-0.5 rounded text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40">${item.Pagi}</span></td>` : `<td class="px-6 py-4 text-yellow-500/40 italic text-xs">KOSONG</td>`;
-                html += item.Malam ? `<td class="px-6 py-4"><span class="px-2 py-0.5 rounded text-xs font-bold bg-yellow-600/20 text-yellow-200 border border-yellow-600/40">${item.Malam}</span></td>` : `<td class="px-6 py-4 text-yellow-500/40 italic text-xs">KOSONG</td>`;
-                html += `<td class="px-6 py-4 text-center"><button onclick="deleteRecord('${item.tanggal}', '${item.divisi}')" class="text-red-400 hover:text-red-200 text-xs font-bold underline">HAPUS</button></td>`;
-                tr.innerHTML = html;
-                tableBody.appendChild(tr);
+            if (!extraCutiData[selectedMonth]) extraCutiData[selectedMonth] = {};
+            const currentExtra = extraCutiData[selectedMonth][n] ? Number(extraCutiData[selectedMonth][n]) : 0;
+            extraCutiData[selectedMonth][n] = currentExtra + addDays;
+
+            rtdb.ref('extraCuti_v6').set(extraCutiData, (err) => {
+                if (err) {
+                    alert("Gagal menyimpan tambahan kuota cuti.");
+                } else {
+                    alert(`Berhasil menambahkan ${addDays} hari kuota cuti manual untuk ${n}.`);
+                    tutupModalExtraCuti();
+                    checkSisaCutiInfo();
+                }
             });
+        }
+
+        function renderMatrix() {
+            const selectedDivisi = filterDivisi.value;
+            const selectedMonth = filterBulan.value;
+            
+            if (!selectedMonth) return;
+
+            const [year, month] = selectedMonth.split('-').map(Number);
+            const daysInMonth = new Date(year, month, 0).getDate();
+            const staffList = karyawanData[selectedDivisi] || [];
+
+            let headerHTML = `<thead><tr class="bg-slate-950/80 text-yellow-400 font-bold border-b border-yellow-500/30 text-center">`;
+            headerHTML += `<th class="px-4 py-3 text-left sticky left-0 bg-[#0c0e14]/90 z-10 min-w-[200px] backdrop-blur-md">NAMA KARYAWAN</th>`;
+            
+            for (let d = 1; d <= daysInMonth; d++) {
+                headerHTML += `<th class="px-2 py-3 min-w-[36px] text-center text-slate-200">${d}</th>`;
+            }
+            headerHTML += `<th class="px-3 py-3 min-w-[60px] text-center text-slate-200">AKSI</th>`;
+            headerHTML += `</tr></thead>`;
+
+            let bodyHTML = `<tbody class="divide-y divide-slate-800/50">`;
+            
+            staffList.forEach(nama => {
+                bodyHTML += `<tr>`;
+                bodyHTML += `<td class="px-4 py-2.5 font-semibold text-slate-100 sticky left-0 bg-[#0c0e14]/90 z-10 border-r border-slate-800/80 backdrop-blur-md">${nama}</td>`;
+
+                let activeShift = "PAGI"; 
+                let effectiveStartDate = null;
+
+                if (shiftStartData[selectedDivisi] && shiftStartData[selectedDivisi][nama]) {
+                    let stData = shiftStartData[selectedDivisi][nama];
+                    if (stData && stData.tanggal && stData.shift) {
+                        effectiveStartDate = new Date(stData.tanggal);
+                        activeShift = stData.shift.toUpperCase();
+                    }
+                }
+
+                for (let d = 1; d <= daysInMonth; d++) {
+                    const dayStr = String(d).padStart(2, '0');
+                    const dateKey = `${selectedMonth}-${dayStr}`;
+                    const currentDate = new Date(dateKey);
+                    
+                    let status = "";
+                    let bgColor = "";
+
+                    let isBeforeStart = effectiveStartDate && (currentDate < effectiveStartDate);
+
+                    if (offdayData[dateKey] && offdayData[dateKey][selectedDivisi]) {
+                        const divData = offdayData[dateKey][selectedDivisi];
+                        
+                        if (divData.Pagi === nama) {
+                            status = "PAGI";
+                            bgColor = "bg-emerald-600/90 text-white font-bold shadow-sm";
+                            activeShift = "PAGI";
+                        } else if (divData.Malam === nama) {
+                            status = "MALAM";
+                            bgColor = "bg-slate-700/90 text-slate-100 font-bold shadow-sm";
+                            activeShift = "MALAM";
+                        } else if (divData.Cuti && divData.Cuti[nama]) {
+                            status = "CUTI";
+                            bgColor = "bg-blue-600/90 text-white font-bold shadow-sm";
+                        } else if (divData.Change && divData.Change[nama]) {
+                            status = divData.Change[nama]; 
+                            bgColor = "bg-purple-600/90 text-white font-bold shadow-sm";
+                            
+                            if (status.includes("CHANGE SHIFT")) {
+                                activeShift = "MALAM";
+                            } else if (status.includes("CHANGE MALAM")) {
+                                activeShift = "PAGI";
+                            }
+                        }
+                    }
+
+                    if (!status) {
+                        if (isBeforeStart) {
+                            status = "-";
+                            bgColor = "text-slate-600";
+                        } else {
+                            status = activeShift;
+                            if (activeShift === "MALAM") {
+                                bgColor = "bg-slate-900/40 text-slate-300 font-medium";
+                            } else {
+                                bgColor = "bg-emerald-950/30 text-emerald-400 font-medium";
+                            }
+                        }
+                    }
+
+                    bodyHTML += `<td class="p-1 text-center"><div class="rounded py-1.5 text-[10px] ${bgColor}" title="${nama} - ${dateKey}">${status}</div></td>`;
+                }
+
+                bodyHTML += `<td class="p-1 text-center text-slate-500">-</td>`;
+                bodyHTML += `</tr>`;
+            });
+
+            bodyHTML += `</tbody>`;
+            matrixTable.innerHTML = headerHTML + bodyHTML;
+            checkSisaCutiInfo();
         }
 
         form.addEventListener('submit', function(e) {
             e.preventDefault();
+            const typeInput = jenisInput.value;
             const divisi = divisiSelect.value;
             const nama = namaSelect.value;
-            const tanggalInput = document.getElementById('tanggal').value;
-            const shift = document.getElementById('shift').value;
-            const targetDate = new Date(tanggalInput);
+            const tglVal = tanggalInput.value;
 
-            // Cek Hari Kamis untuk CS & Kapten Shift Pagi
-            const dayOfWeek = targetDate.getDay(); 
-            if (dayOfWeek === 4 && shift === 'Pagi' && (divisi === 'CS' || divisi === 'KAPTEN')) {
-                showAlert(`GAGAL! Divisi ${divisi} untuk Shift Pagi TIDAK BISA mengambil offday di hari Kamis.`);
+            if (typeInput === 'SetShift') {
+                const shiftVal = shiftSelect.value;
+                if (!shiftStartData[divisi]) shiftStartData[divisi] = {};
+                shiftStartData[divisi][nama] = { tanggal: tglVal, shift: shiftVal };
+
+                rtdb.ref('shiftStart_v6').set(shiftStartData, (error) => {
+                    if (error) showAlert("Gagal menyimpan Setel Shift Berkelanjutan!");
+                    else {
+                        showAlert(`BERHASIL: Shift ${nama} diatur ${shiftVal} mulai ${tglVal}.`, 'success');
+                        form.reset();
+                        toggleJenisInput();
+                        namaSelect.innerHTML = '<option value="">-- Pilih Divisi Terlebih Dahulu --</option>';
+                    }
+                });
                 return;
             }
 
-            if (!offdayData[tanggalInput]) {
-                offdayData[tanggalInput] = {
-                    "CS": { Pagi: null, Malam: null },
-                    "KAPTEN": { Pagi: null, Malam: null },
-                    "KASIR": { Pagi: null, Malam: null }
+            const targetDate = new Date(tglVal);
+            const targetMonthStr = targetDate.getFullYear() + '-' + String(targetDate.getMonth() + 1).padStart(2, '0');
+
+            if (typeInput === 'Cuti') {
+                const maxReguler = getBatasCuti(divisi);
+                const extra = (extraCutiData[targetMonthStr] && extraCutiData[targetMonthStr][nama]) ? Number(extraCutiData[targetMonthStr][nama]) : 0;
+                const totalMaks = maxReguler + extra;
+                const terpakai = hitungCutiTerpakai(nama, divisi, targetMonthStr);
+                const jumlahHariCuti = maxReguler; // Otomatis 14 hari untuk CS/Kapten atau 12 hari untuk Kasir
+
+                if (terpakai + jumlahHariCuti > totalMaks) {
+                    showAlert(`VALIDASI GAGAL: Pengajuan cuti otomatis ${jumlahHariCuti} hari melebihi sisa kuota (${totalMaks - terpakai} hari lagi). Silakan gunakan tombol '+ TAMBAH KUOTA CUTI MANUAL' di atas.`);
+                    return;
+                }
+
+                let currentDateLoop = new Date(tglVal);
+                let suksesCount = 0;
+
+                for (let i = 0; i < jumlahHariCuti; i++) {
+                    const year = currentDateLoop.getFullYear();
+                    const month = String(currentDateLoop.getMonth() + 1).padStart(2, '0');
+                    const day = String(currentDateLoop.getDate()).padStart(2, '0');
+                    const formattedDate = `${year}-${month}-${day}`;
+
+                    if (!offdayData[formattedDate]) {
+                        offdayData[formattedDate] = {
+                            "CS": { Pagi: null, Malam: null, Cuti: {}, Change: {} },
+                            "KAPTEN": { Pagi: null, Malam: null, Cuti: {}, Change: {} },
+                            "KASIR": { Pagi: null, Malam: null, Cuti: {}, Change: {} }
+                        };
+                    }
+                    if (!offdayData[formattedDate][divisi].Cuti) {
+                        offdayData[formattedDate][divisi].Cuti = {};
+                    }
+
+                    offdayData[formattedDate][divisi].Cuti[nama] = "CUTI";
+                    suksesCount++;
+                    currentDateLoop.setDate(currentDateLoop.getDate() + 1);
+                }
+
+                rtdb.ref('offdayData_v6').set(offdayData, (error) => {
+                    if (error) {
+                        showAlert("Gagal menyimpan Cuti otomatis!");
+                    } else {
+                        showAlert(`BERHASIL: Cuti otomatis tercatat beruntun selama ${suksesCount} hari ke depan untuk ${nama} mulai tanggal ${tglVal}.`, 'success');
+                        form.reset();
+                        toggleJenisInput();
+                        namaSelect.innerHTML = '<option value="">-- Pilih Divisi Terlebih Dahulu --</option>';
+                    }
+                });
+                return;
+            }
+
+            if (!offdayData[tglVal]) {
+                offdayData[tglVal] = {
+                    "CS": { Pagi: null, Malam: null, Cuti: {}, Change: {} },
+                    "KAPTEN": { Pagi: null, Malam: null, Cuti: {}, Change: {} },
+                    "KASIR": { Pagi: null, Malam: null, Cuti: {}, Change: {} }
                 };
             }
+            if (!offdayData[tglVal][divisi].Cuti) offdayData[tglVal][divisi].Cuti = {};
+            if (!offdayData[tglVal][divisi].Change) offdayData[tglVal][divisi].Change = {};
 
-            // Cek apakah shift di tanggal tersebut sudah terisi
-            if (offdayData[tanggalInput][divisi][shift] !== null) {
-                showAlert(`GAGAL! SHIFT ${shift} UNTUK DIVISI ${divisi} PADA TANGGAL ${tanggalInput} SUDAH DIISI OLEH ${offdayData[tanggalInput][divisi][shift]}.`);
+            if (typeInput === 'ChangeShift') {
+                const changeVal = document.getElementById('changeShiftType').value;
+                offdayData[tglVal][divisi].Change[nama] = changeVal;
+
+                rtdb.ref('offdayData_v6').set(offdayData, (error) => {
+                    if (error) showAlert("Gagal menyimpan Change Shift!");
+                    else {
+                        showAlert(`BERHASIL: Rotasi ${nama} (${changeVal}) dicatat pada ${tglVal}.`, 'success');
+                        form.reset();
+                        toggleJenisInput();
+                        namaSelect.innerHTML = '<option value="">-- Pilih Divisi Terlebih Dahulu --</option>';
+                    }
+                });
                 return;
             }
 
-            const targetMonth = targetDate.getFullYear() + '-' + String(targetDate.getMonth() + 1).padStart(2, '0');
-            let monthlyCount = 0;
+            const shift = shiftSelect.value;
+            const dayOfWeek = targetDate.getDay(); 
+            if (dayOfWeek === 4 && shift === 'Pagi' && (divisi === 'CS' || divisi === 'KAPTEN')) {
+                showAlert(`VALIDASI GAGAL: Divisi ${divisi} Shift Pagi tidak diizinkan offday di hari Kamis.`);
+                return;
+            }
 
+            if (offdayData[tglVal][divisi][shift] !== null) {
+                showAlert(`VALIDASI GAGAL: Shift ${shift} divisi ${divisi} pada ${tglVal} sudah diisi oleh ${offdayData[tglVal][divisi][shift]}.`);
+                return;
+            }
+
+            let monthlyCount = 0;
             for (let tgl in offdayData) {
                 let currentDivs = offdayData[tgl];
                 let dDate = new Date(tgl);
@@ -354,20 +721,17 @@
                         let existingDate = new Date(tgl);
                         let diffDays = Math.round((targetDate - existingDate) / (1000 * 60 * 60 * 24));
 
-                        // Cek Dobel Tanggal
                         if (diffDays === 0) {
-                            showAlert(`GAGAL! ${nama} SUDAH TERDAFTAR OFFDAY PADA TANGGAL ${tanggalInput}.`);
+                            showAlert(`VALIDASI GAGAL: ${nama} sudah terdaftar offday pada tanggal tersebut.`);
                             return;
                         }
-                        // Cek Jeda Minimal 7 hari (selisih < 8 hari)
                         if (Math.abs(diffDays) < 8) {
-                            showAlert(`GAGAL! ${nama} BARU SAJA OFFDAY PADA TANGGAL ${tgl}. JEDA MINIMAL 8 HARI.`);
+                            showAlert(`VALIDASI GAGAL: ${nama} baru offday pada ${tgl}. Jeda minimal antar offday adalah 8 hari.`);
                             return;
                         }
                     }
 
-                    // Hitung jumlah offday di bulan yang sama
-                    if (dMonth === targetMonth) {
+                    if (dMonth === targetMonthStr) {
                         if (currentDivs[d].Pagi === nama || currentDivs[d].Malam === nama) {
                             monthlyCount++;
                         }
@@ -375,49 +739,34 @@
                 }
             }
 
-            // Cek Batasan Maksimal 2x Offday per Bulan
             if (monthlyCount >= 2) {
-                showAlert(`GAGAL! ${nama} SUDAH MENGAMBIL OFFDAY SEBANYAK ${monthlyCount} KALI PADA BULAN INI (MAKSIMAL 2 KALI).`);
+                showAlert(`VALIDASI GAGAL: ${nama} telah mencapai batas maksimal offday bulan ini (${monthlyCount}/2 kali).`);
                 return;
             }
 
-            offdayData[tanggalInput][divisi][shift] = nama;
-            
-            rtdb.ref('offdayData_v5').set(offdayData, (error) => {
+            offdayData[tglVal][divisi][shift] = nama;
+
+            rtdb.ref('offdayData_v6').set(offdayData, (error) => {
                 if (error) {
-                    showAlert("Gagal menyimpan ke database!");
+                    showAlert("Gagal menyimpan ke database Firebase!");
                 } else {
-                    showAlert(`BERHASIL! OFFDAY SHIFT ${shift} (${divisi}) DISIMPAN.`, 'success');
+                    showAlert(`BERHASIL: Offday Shift ${shift} (${divisi}) berhasil disimpan.`, 'success');
                     form.reset();
-                    namaSelect.innerHTML = '<option value="" class="bg-black">Pilih Divisi Terlebih Dahulu</option>';
+                    toggleJenisInput();
+                    namaSelect.innerHTML = '<option value="">-- Pilih Divisi Terlebih Dahulu --</option>';
                 }
             });
         });
 
-        window.deleteRecord = function(tanggal, divisi) {
-            if (confirm(`YAKIN INGIN MENGHAPUS DATA OFFDAY DIVISI ${divisi} TANGGAL ${tanggal}?`)) {
-                offdayData[tanggal][divisi] = { Pagi: null, Malam: null };
-                let isEmpty = true;
-                for (let d in offdayData[tanggal]) {
-                    if (offdayData[tanggal][d].Pagi !== null || offdayData[tanggal][d].Malam !== null) isEmpty = false;
-                }
-                if (isEmpty) delete offdayData[tanggal];
-
-                rtdb.ref('offdayData_v5').set(offdayData, (error) => {
-                    if (!error) showAlert('DATA BERHASIL DIHAPUS.', 'success');
-                });
-            }
-        };
-
         window.resetData = function() {
-            if (confirm('YAKIN INGIN MERESET SELURUH DATA OFFDAY?')) {
-                rtdb.ref('offdayData_v5').remove((error) => {
-                    if (!error) showAlert('SEMUA DATA BERHASIL DIRESET.', 'success');
+            if (confirm('PERINGATAN: Apakah Anda yakin ingin mereset seluruh data Shift, Offday, Cuti, dan Ekstra Cuti di database?')) {
+                rtdb.ref('offdayData_v6').remove();
+                rtdb.ref('shiftStart_v6').remove();
+                rtdb.ref('extraCuti_v6').remove((error) => {
+                    if (!error) showAlert('DATABASE BERHASIL DIRESET KEMBALI KOSONG.', 'success');
                 });
             }
         };
-
-        renderTable();
     </script>
 </body>
 </html>
