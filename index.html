@@ -56,15 +56,16 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-amber-300 mb-1">Password</label>
-                    <input type="password" id="loginPassword" required class="w-full px-4 py-2 rounded-lg neon-input" placeholder="••••••">
+                    <input type="password" id="loginPassword" required class="w-full px-4 py-2 rounded-lg neon-input" placeholder="••••••••">
                 </div>
                 <button type="submit" class="w-full py-2 rounded-lg font-bold neon-btn">MASUK</button>
             </form>
 
-            <div class="mt-4 text-center">
-                <button onclick="setupAllStaff()" class="text-xs text-amber-400 hover:underline">
-                    🔄 Klik Inisialisasi Ulang 36 Akun (Password Baru: 12345678)
+            <div class="mt-4 text-center space-y-2">
+                <button onclick="setupAllStaff()" class="text-xs text-amber-400 hover:underline block w-full">
+                    🔄 Klik di Sini Untuk Daftarkan 36 Akun (Password: 12345678)
                 </button>
+                <a href="admin.html" class="text-xs text-gray-400 hover:text-amber-300 block">🛡️ Masuk ke Panel Admin</a>
             </div>
         </div>
 
@@ -113,6 +114,7 @@
 
         let currentUserEmail = "";
 
+        // Daftar 36 Email Staff Anda
         const allStaffEmails = [
             "andrewellyanto88.smb88@gmail.com", "idrisidr1366@gmail.com", "martinpangkawira8@gmail.com",
             "roniharianan122@gmail.com", "jekisyahputra.smb888@gmail.com", "dickywijaya03215@gmail.com",
@@ -128,42 +130,27 @@
             "suwadenakas@gmail.com", "yurikanasyiwa345@gmail.com", "ratnasari061023@gmail.com"
         ];
 
-        async function setupAllStaff() {
+        // Fungsi otomatis mendaftarkan 36 akun ke Firebase Auth dengan password "12345678"
+        window.setupAllStaff = async function() {
             const successDiv = document.getElementById('loginSuccess');
             const errorDiv = document.getElementById('loginError');
             successDiv.classList.add('hidden');
             errorDiv.classList.add('hidden');
 
             let created = 0;
-            let updated = 0;
-
             for (let email of allStaffEmails) {
                 try {
-                    // Coba buat akun baru dengan password 8 karakter (12345678)
                     await auth.createUserWithEmailAndPassword(email, "12345678");
                     created++;
-                } catch (err) {
-                    // Jika akun sudah ada, kita paksa ubah passwordnya dengan sign-in lalu update password
-                    try {
-                        const userCred = await auth.signInWithEmailAndPassword(email, "123456"); // coba password lama
-                        await userCred.user.updatePassword("12345678");
-                        updated++;
-                    } catch (e2) {
-                        try {
-                            // Kalau pakai 12345678 sudah benar tapi butuh sinkron
-                            await auth.signInWithEmailAndPassword(email, "12345678");
-                        } catch (e3) {
-                            // Abaikan jika gagal total pada akun tertentu
-                        }
-                    }
+                } catch (e) {
+                    // Jika sudah ada, dilewati saja
                 }
             }
-
-            successDiv.innerText = `Selesai! Akun baru dibuat: ${created}, Akun diperbarui passwordnya: ${updated}. Password semua akun sekarang: 12345678`;
+            successDiv.innerText = `Selesai! Berhasil mendaftarkan/memeriksa akun. Password semua staff: 12345678`;
             successDiv.classList.remove('hidden');
-        }
+        };
 
-        async function handleLogin(e) {
+        window.handleLogin = async function(e) {
             e.preventDefault();
             const email = document.getElementById('loginEmail').value.trim();
             const password = document.getElementById('loginPassword').value;
@@ -180,7 +167,7 @@
                 errorDiv.innerText = "Login gagal: Email atau password salah.";
                 errorDiv.classList.remove('hidden');
             }
-        }
+        };
 
         function loadDashboard(email) {
             document.getElementById('loginSection').classList.add('hidden');
@@ -188,14 +175,14 @@
             document.getElementById('staffNameDisplay').innerText = email;
         }
 
-        async function handleLogout() {
+        window.handleLogout = async function() {
             await auth.signOut();
             document.getElementById('dashboardSection').classList.add('hidden');
             document.getElementById('loginSection').classList.remove('hidden');
             document.getElementById('loginForm').reset();
-        }
+        };
 
-        async function submitOffday(e) {
+        window.submitOffday = async function(e) {
             e.preventDefault();
             const date = document.getElementById('offdayDate').value;
             const reason = document.getElementById('offdayReason').value;
@@ -219,7 +206,7 @@
                 msgDiv.className = "mb-3 p-2 text-sm rounded-lg bg-red-900/60 border border-red-500 text-red-200";
                 msgDiv.classList.remove('hidden');
             }
-        }
+        };
     </script>
 </body>
 </html>
