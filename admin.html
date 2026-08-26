@@ -85,7 +85,7 @@
             </div>
             
             <h1 class="text-3xl font-bold font-digital tracking-wide neon-text">DASHBOARD ADMIN OFFDAY</h1>
-            <p class="text-yellow-200/80 font-medium mt-1 font-digital text-sm">ATURAN: 1 ORANG PAGI & 1 ORANG MALAM PER DIVISI | JEDA MINIMAL 7 HARI | CS & KAPTEN PAGI TIDAK BISA HARI KAMIS</p>
+            <p class="text-yellow-200/80 font-medium mt-1 font-digital text-sm">ATURAN: MAKS. 2X OFFDAY/BULAN | 1 PAGI & 1 MALAM PER DIVISI | JEDA MINIMAL 7 HARI | CS & KAPTEN PAGI TIDAK BISA KAMIS</p>
         </header>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -316,6 +316,7 @@
             const shift = document.getElementById('shift').value;
             const targetDate = new Date(tanggalInput);
 
+            // Cek Hari Kamis untuk CS & Kapten Shift Pagi
             const dayOfWeek = targetDate.getDay(); 
             if (dayOfWeek === 4 && shift === 'Pagi' && (divisi === 'CS' || divisi === 'KAPTEN')) {
                 showAlert(`GAGAL! Divisi ${divisi} untuk Shift Pagi TIDAK BISA mengambil offday di hari Kamis.`);
@@ -330,13 +331,20 @@
                 };
             }
 
+            // Cek apakah shift di tanggal tersebut sudah terisi
             if (offdayData[tanggalInput][divisi][shift] !== null) {
                 showAlert(`GAGAL! SHIFT ${shift} UNTUK DIVISI ${divisi} PADA TANGGAL ${tanggalInput} SUDAH DIISI OLEH ${offdayData[tanggalInput][divisi][shift]}.`);
                 return;
             }
 
+            const targetMonth = targetDate.getFullYear() + '-' + String(targetDate.getMonth() + 1).padStart(2, '0');
+            let monthlyCount = 0;
+
             for (let tgl in offdayData) {
                 let currentDivs = offdayData[tgl];
+                let dDate = new Date(tgl);
+                let dMonth = dDate.getFullYear() + '-' + String(dDate.getMonth() + 1).padStart(2, '0');
+
                 for (let d in currentDivs) {
                     let bookedName = null;
                     if (currentDivs[d].Pagi === nama) bookedName = currentDivs[d].Pagi;
@@ -346,16 +354,31 @@
                         let existingDate = new Date(tgl);
                         let diffDays = Math.round((targetDate - existingDate) / (1000 * 60 * 60 * 24));
 
+                        // Cek Dobel Tanggal
                         if (diffDays === 0) {
                             showAlert(`GAGAL! ${nama} SUDAH TERDAFTAR OFFDAY PADA TANGGAL ${tanggalInput}.`);
                             return;
                         }
+                        // Cek Jeda Minimal 7 hari (selisih < 8 hari)
                         if (Math.abs(diffDays) < 8) {
                             showAlert(`GAGAL! ${nama} BARU SAJA OFFDAY PADA TANGGAL ${tgl}. JEDA MINIMAL 8 HARI.`);
                             return;
                         }
                     }
+
+                    // Hitung jumlah offday di bulan yang sama
+                    if (dMonth === targetMonth) {
+                        if (currentDivs[d].Pagi === nama || currentDivs[d].Malam === nama) {
+                            monthlyCount++;
+                        }
+                    }
                 }
+            }
+
+            // Cek Batasan Maksimal 2x Offday per Bulan
+            if (monthlyCount >= 2) {
+                showAlert(`GAGAL! ${nama} SUDAH MENGAMBIL OFFDAY SEBANYAK ${monthlyCount} KALI PADA BULAN INI (MAKSIMAL 2 KALI).`);
+                return;
             }
 
             offdayData[tanggalInput][divisi][shift] = nama;
