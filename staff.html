@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Pengajuan Offday Staff</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <style>
+        body {
+            background-image: url('https://demigod-assets.sgp1.cdn.digitaloceanspaces.com/bgassets/goltogel.webp');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+        }
+        /* Efek Neon Emas (Gold Glow) */
+        .neon-box {
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid rgba(234, 179, 8, 0.5);
+            box-shadow: 0 0 20px rgba(234, 179, 8, 0.3), inset 0 0 15px rgba(234, 179, 8, 0.1);
+        }
+        .neon-input {
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid rgba(234, 179, 8, 0.4);
+            color: #ffffff;
+        }
+        .neon-input:focus {
+            border-color: #fbbf24;
+            box-shadow: 0 0 10px rgba(251, 191, 36, 0.6);
+            outline: none;
+        }
+        .neon-btn {
+            background: linear-gradient(135deg, #d97706, #fbbf24);
+            color: #0f172a;
+            box-shadow: 0 0 15px rgba(251, 191, 36, 0.5);
+            transition: all 0.3s ease;
+        }
+        .neon-btn:hover {
+            box-shadow: 0 0 25px rgba(251, 191, 36, 0.8);
+            transform: translateY(-1px);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+
+    <!-- CONTAINER UTAMA DENGAN EFEK NEON EMAS -->
+    <div class="w-full max-w-md neon-box rounded-2xl p-6 text-gray-100 backdrop-blur-md">
+        
+        <!-- BAGIAN 1: HALAMAN LOGIN -->
+        <div id="loginSection">
+            <h2 class="text-2xl font-bold text-center text-amber-400 mb-6 tracking-wide drop-shadow-[0_0_10px_rgba(251,191,36,0.5)]">LOGIN STAFF</h2>
+            <div id="loginError" class="hidden mb-4 p-3 bg-red-900/60 border border-red-500 text-red-200 text-sm rounded-lg"></div>
+            
+            <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-amber-300 mb-1">Email</label>
+                    <input type="email" id="loginEmail" required class="w-full px-4 py-2 rounded-lg neon-input" placeholder="email@gmail.com">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-amber-300 mb-1">Password</label>
+                    <input type="password" id="loginPassword" required class="w-full px-4 py-2 rounded-lg neon-input" placeholder="••••••">
+                </div>
+                <button type="submit" class="w-full py-2 rounded-lg font-bold neon-btn">
+                    MASUK
+                </button>
+            </form>
+        </div>
+
+        <!-- BAGIAN 2: DASHBOARD STAFF (TERSEMBUNYI SEBELUM LOGIN) -->
+        <div id="dashboardSection" class="hidden">
+            <div class="flex justify-between items-center mb-6 pb-3 border-b border-amber-500/30">
+                <div>
+                    <h3 id="staffNameDisplay" class="font-bold text-lg text-amber-300">Nama Staff</h3>
+                    <span id="staffDivisionDisplay" class="text-xs bg-amber-950 text-amber-300 border border-amber-500/50 px-2 py-0.5 rounded font-semibold">DIVISI</span>
+                </div>
+                <button onclick="handleLogout()" class="text-sm text-red-400 hover:text-red-300 font-medium">Keluar</button>
+            </div>
+
+            <!-- Form Pengajuan Offday -->
+            <h4 class="font-semibold text-amber-200 mb-3">Form Pengajuan Offday</h4>
+            <div id="formMessage" class="hidden mb-3 p-2 text-sm rounded-lg"></div>
+
+            <form id="offdayForm" onsubmit="submitOffday(event)" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-amber-300 mb-1">Pilih Tanggal Offday</label>
+                    <input type="date" id="offdayDate" required class="w-full px-4 py-2 rounded-lg neon-input">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-amber-300 mb-1">Keterangan / Alasan</label>
+                    <textarea id="offdayReason" rows="3" required class="w-full px-4 py-2 rounded-lg neon-input" placeholder="Tuliskan alasan pengajuan..."></textarea>
+                </div>
+                <button type="submit" class="w-full py-2 rounded-lg font-bold neon-btn">
+                    KIRIM PENGAJUAN
+                </button>
+            </form>
+
+            <!-- Tombol Ubah Password -->
+            <div class="mt-6 pt-4 border-t border-amber-500/30 text-center">
+                <button onclick="openChangePasswordModal()" class="text-sm text-amber-400 hover:underline font-medium">Ubah Password Akun</button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- MODAL UBAH PASSWORD -->
+    <div id="passwordModal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="neon-box rounded-2xl max-w-sm w-full p-6 text-gray-100">
+            <h3 class="text-lg font-bold text-amber-300 mb-4">Ubah Password Baru</h3>
+            <div id="modalMessage" class="hidden mb-3 p-2 text-sm rounded-lg"></div>
+            <form onsubmit="changePassword(event)" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-amber-300 mb-1">Password Baru</label>
+                    <input type="password" id="newPassword" required minlength="6" class="w-full px-4 py-2 rounded-lg neon-input" placeholder="Minimal 6 karakter">
+                </div>
+                <div class="flex space-x-2">
+                    <button type="button" onclick="closeChangePasswordModal()" class="w-1/2 bg-slate-700 text-gray-200 py-2 rounded-lg font-semibold hover:bg-slate-600">Batal</button>
+                    <button type="submit" class="w-1/2 py-2 rounded-lg font-bold neon-btn">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- SKRIP UTAMA FIREBASE -->
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyDzGanmCbR1nMYzOr7CzhIlN1E_9lMUzE",
+            authDomain: "offday-58776.firebaseapp.com",
+            projectId: "offday-58776",
+            storageBucket: "offday-58776.firebasestorage.app",
+            messagingSenderId: "550746205844",
+            appId: "1:550746205844:web:5cd9b900d628f4d612ce81",
+            measurementId: "G-DMRPRTGYWG"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        let currentUserEmail = "";
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            const errorDiv = document.getElementById('loginError');
+            errorDiv.classList.add('hidden');
+
+            try {
+                const userCredential = await auth.signInWithEmailAndPassword(email, password);
+                currentUserEmail = userCredential.user.email;
+                checkAndRegisterStaffProfile(currentUserEmail);
+                loadDashboard(currentUserEmail);
+            } catch (error) {
+                errorDiv.innerText = "Login gagal: Email atau password salah.";
+                errorDiv.classList.remove('hidden');
+            }
+        }
+
+        async function checkAndRegisterStaffProfile(email) {
+            const docRef = db.collection('staff').doc(email);
+            const doc = await docRef.get();
+            if (!doc.exists) {
+                const defaultName = email.split('@')[0].toUpperCase();
+                await docRef.set({
+                    nama: defaultName,
+                    divisi: "STAFF"
+                });
+            }
+        }
+
+        async function loadDashboard(email) {
+            document.getElementById('loginSection').classList.add('hidden');
+            document.getElementById('dashboardSection').classList.remove('hidden');
+
+            try {
+                const doc = await db.collection('staff').doc(email).get();
+                if (doc.exists) {
+                    document.getElementById('staffNameDisplay').innerText = doc.data().nama || email;
+                    document.getElementById('staffDivisionDisplay').innerText = doc.data().divisi || "STAFF";
+                } else {
+                    document.getElementById('staffNameDisplay').innerText = email;
+                    document.getElementById('staffDivisionDisplay').innerText = "STAFF";
+                }
+            } catch (err) {
+                document.getElementById('staffNameDisplay').innerText = email;
+            }
+        }
+
+        async function handleLogout() {
+            await auth.signOut();
+            document.getElementById('dashboardSection').classList.add('hidden');
+            document.getElementById('loginSection').classList.remove('hidden');
+            document.getElementById('loginForm').reset();
+        }
+
+        async function submitOffday(e) {
+            e.preventDefault();
+            const date = document.getElementById('offdayDate').value;
+            const reason = document.getElementById('offdayReason').value;
+            const msgDiv = document.getElementById('formMessage');
+
+            try {
+                await db.collection('pengajuan_offday').add({
+                    email: currentUserEmail,
+                    tanggal: date,
+                    alasan: reason,
+                    status: "Pending",
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                msgDiv.innerText = "Pengajuan offday berhasil dikirim!";
+                msgDiv.className = "mb-3 p-2 text-sm rounded-lg bg-green-900/60 border border-green-500 text-green-200";
+                msgDiv.classList.remove('hidden');
+                document.getElementById('offdayForm').reset();
+            } catch (err) {
+                msgDiv.innerText = "Gagal mengirim pengajuan: " + err.message;
+                msgDiv.className = "mb-3 p-2 text-sm rounded-lg bg-red-900/60 border border-red-500 text-red-200";
+                msgDiv.classList.remove('hidden');
+            }
+        }
+
+        function openChangePasswordModal() {
+            document.getElementById('passwordModal').classList.remove('hidden');
+        }
+        function closeChangePasswordModal() {
+            document.getElementById('passwordModal').classList.add('hidden');
+            document.getElementById('modalMessage').classList.add('hidden');
+        }
+
+        async function changePassword(e) {
+            e.preventDefault();
+            const newPassword = document.getElementById('newPassword').value;
+            const msgDiv = document.getElementById('modalMessage');
+            const user = auth.currentUser;
+
+            if (user) {
+                try {
+                    await user.updatePassword(newPassword);
+                    msgDiv.innerText = "Password berhasil diubah!";
+                    msgDiv.className = "mb-3 p-2 text-sm rounded-lg bg-green-900/60 border border-green-500 text-green-200";
+                    msgDiv.classList.remove('hidden');
+                    setTimeout(() => closeChangePasswordModal(), 2000);
+                } catch (err) {
+                    msgDiv.innerText = "Gagal: " + err.message;
+                    msgDiv.className = "mb-3 p-2 text-sm rounded-lg bg-red-900/60 border border-red-500 text-red-200";
+                    msgDiv.classList.remove('hidden');
+                }
+            }
+        }
+
+        // Fungsi pendaftaran massal (Password default: 123456)
+        async function autoRegisterAllStaff() {
+            const emails = [
+                "andrewellyanto88.smb88@gmail.com", "idrisidr1366@gmail.com", "martinpangkawira8@gmail.com",
+                "roniharianan122@gmail.com", "jekisyahputra.smb888@gmail.com", "dickywijaya03215@gmail.com",
+                "bilkisari8678@gmail.com", "anovela290@gmail.com", "panipradeka0356@gmail.com",
+                "smudamanik@gmail.com", "muhammadagusalim77@gmail.com", "habirahmad1998@gmail.com",
+                "asanjayadamanik@gmail.com", "aisyatunmukarromah034@gmail.com", "hutagalungmuhammadramadan@gmail.com",
+                "gustiirwanda125@gmail.com", "jayaokisan797@gmail.com", "raflirinaldi8899@gmail.com",
+                "ichaanadaifi88@gmail.com", "wiliaananda53@gmail.com", "adityanugroho251192@gmail.com",
+                "muhammadzulfa1603@gmail.com", "diansyahputra45678@gmail.com", "putrinazwaramadhaninasution@gmail.com",
+                "irfanrosandy25052024@gmail.com", "oktosuryadi63@gmail.com", "akashviknesh88@gmail.com",
+                "aldinofajar005@gmail.com", "weninaalexandrah@gmail.com", "danielsiahaan500@gmail.com",
+                "yusufrahman5871@gmail.com", "mestikasafitrisimbolon888@gmail.com", "bulanmeiyanti888@gmail.com",
+                "suwadenakas@gmail.com", "yurikanasyiwa345@gmail.com", "ratnasari061023@gmail.com"
+            ];
+
+            console.log("Memulai pendaftaran otomatis 36 akun staff ke Firebase Auth...");
+            for (let email of emails) {
+                try {
+                    await auth.createUserWithEmailAndPassword(email, "123456");
+                    console.log(`[TERDAFTAR] ${email}`);
+                } catch (e) {
+                    console.log(`[LEWAT/SUDAH ADA] ${email}`);
+                }
+                await new Promise(resolve => setTimeout(resolve, 200));
+            }
+            alert("Pendaftaran massal 36 akun staff selesai!");
+        }
+    </script>
+</body>
+</html>
