@@ -3,101 +3,398 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel Admin - Kelola Offday Staff</title>
+    <title>Admin Dashboard - Offday System</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Firebase SDK Compat -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
-        body { background-color: #0f172a; color: #f8fafc; font-family: sans-serif; }
+        body {
+            background-color: #0d0d0d;
+            background-image: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)), url('https://demigod-assets.sgp1.cdn.digitaloceanspaces.com/bgassets/goltogel.webp');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            color: #facc15;
+        }
+        .font-digital { font-family: 'Share Tech Mono', monospace; }
+        
+        @keyframes rotateNeon {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .neon-border-wrapper {
+            position: relative;
+            border-radius: 0.75rem;
+            padding: 2px;
+            background: linear-gradient(60deg, #facc15, #854d0e, #facc15, #713f12, #facc15);
+            background-size: 300% 300%;
+            animation: rotateNeon 6s ease infinite;
+            box-shadow: 0 0 15px rgba(250, 204, 21, 0.3);
+        }
+
+        .neon-content {
+            background: rgba(15, 15, 15, 0.95);
+            border-radius: calc(0.75rem - 2px);
+        }
+
+        .neon-text {
+            color: #facc15;
+            text-shadow: 0 0 8px rgba(250, 204, 21, 0.6);
+        }
+        .neon-input {
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #facc15;
+            color: #facc15;
+        }
+        .neon-input:focus {
+            outline: none;
+            box-shadow: 0 0 10px #facc15;
+        }
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(1) hue-rotate(30deg) brightness(1.5);
+            cursor: pointer;
+            transform: scale(1.2);
+        }
+        .neon-btn {
+            background: #facc15;
+            color: #000;
+            font-weight: bold;
+            box-shadow: 0 0 10px rgba(250, 204, 21, 0.5);
+            transition: all 0.2s ease;
+        }
+        .neon-btn:hover {
+            background: #fef08a;
+            box-shadow: 0 0 20px #facc15;
+        }
     </style>
 </head>
-<body class="p-6">
-    <div class="max-w-4xl mx-auto">
-        <div class="flex justify-between items-center mb-6 pb-4 border-b border-gray-700">
-            <h1 class="text-2xl font-bold text-amber-400">🛡️ Panel Admin - Daftar Pengajuan Offday</h1>
-            <a href="index.html" class="text-sm text-amber-300 hover:underline">← Ke Halaman Login Staff</a>
-        </div>
+<body class="min-h-screen font-sans">
 
-        <div class="overflow-x-auto bg-slate-900 border border-amber-500/30 rounded-xl p-4 shadow-xl">
-            <table class="w-full text-left border-collapse">
-                <thead>
-                    <tr class="border-b border-gray-700 text-amber-300 text-sm">
-                        <th class="p-3">Email Staff</th>
-                        <th class="p-3">Tanggal Offday</th>
-                        <th class="p-3">Alasan</th>
-                        <th class="p-3">Status</th>
-                        <th class="p-3 text-center">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody id="adminTableBody" class="text-sm">
-                    <tr><td colspan="5" class="p-4 text-center text-gray-400">Memuat data pengajuan...</td></tr>
-                </tbody>
-            </table>
+    <div class="max-w-7xl mx-auto px-4 py-8">
+        <header class="mb-8 text-center">
+            <div class="neon-border-wrapper mb-4">
+                <div class="neon-content px-6 py-2 flex justify-between items-center text-sm font-digital">
+                    <div>MODE: <span class="text-white font-bold">ADMINISTRATOR</span></div>
+                    <div class="neon-text"><span id="digitalClock">00:00:00</span> &bull; <span id="digitalDate">--/--/----</span></div>
+                    <div><a href="staff.html" class="text-yellow-300 hover:underline">Buka View Staff &rarr;</a></div>
+                </div>
+            </div>
+            
+            <h1 class="text-3xl font-bold font-digital tracking-wide neon-text">DASHBOARD ADMIN OFFDAY</h1>
+            <p class="text-yellow-200/80 font-medium mt-1 font-digital text-sm">ATURAN: 1 ORANG PAGI & 1 ORANG MALAM PER DIVISI | JEDA MINIMAL 7 HARI | CS & KAPTEN PAGI TIDAK BISA HARI KAMIS</p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <!-- Form Input Admin -->
+            <div class="lg:col-span-1">
+                <div class="neon-border-wrapper sticky top-6">
+                    <div class="neon-content p-6">
+                        <h2 class="text-base font-bold mb-4 font-digital tracking-wide neon-text">FORM PENGAJUAN OFFDAY</h2>
+                        <form id="offdayForm" class="space-y-4 font-digital">
+                            <div>
+                                <label class="block text-xs font-bold mb-1">DIVISI</label>
+                                <select id="divisi" required class="w-full px-3 py-2 rounded-lg neon-input text-sm" onchange="updateKaryawanList()">
+                                    <option value="" class="bg-black">Pilih Divisi</option>
+                                    <option value="CS" class="bg-black">Customer Service (CS)</option>
+                                    <option value="KAPTEN" class="bg-black">Kapten</option>
+                                    <option value="KASIR" class="bg-black">Kasir</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold mb-1">NAMA KARYAWAN</label>
+                                <select id="nama" required class="w-full px-3 py-2 rounded-lg neon-input text-sm">
+                                    <option value="" class="bg-black">Pilih Divisi Terlebih Dahulu</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold mb-1">TANGGAL OFFDAY</label>
+                                <input type="date" id="tanggal" required class="w-full px-3 py-2 rounded-lg neon-input text-sm cursor-pointer">
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold mb-1">SHIFT</label>
+                                <select id="shift" required class="w-full px-3 py-2 rounded-lg neon-input text-sm">
+                                    <option value="" class="bg-black">Pilih Shift</option>
+                                    <option value="Pagi" class="bg-black">Pagi (Maks. 1 Orang / Divisi)</option>
+                                    <option value="Malam" class="bg-black">Malam (Maks. 1 Orang / Divisi)</option>
+                                </select>
+                            </div>
+
+                            <button type="submit" class="w-full py-2.5 px-4 rounded-lg neon-btn tracking-wider uppercase text-sm">
+                                SIMPAN OFFDAY
+                            </button>
+                        </form>
+                        <div id="alertBox" class="mt-4 hidden p-3 rounded-lg text-sm font-digital"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabel & Filter -->
+            <div class="lg:col-span-2 space-y-6">
+                <div class="neon-border-wrapper">
+                    <div class="neon-content p-4 flex flex-col sm:flex-row justify-between items-center gap-4 font-digital">
+                        <div class="flex items-center gap-2 w-full sm:w-auto">
+                            <label class="text-xs font-bold">FILTER DIVISI:</label>
+                            <select id="filterDivisi" class="px-3 py-1.5 rounded-lg text-sm neon-input" onchange="renderTable()">
+                                <option value="ALL" class="bg-black">Semua Divisi</option>
+                                <option value="CS" class="bg-black">CS</option>
+                                <option value="KAPTEN" class="bg-black">KAPTEN</option>
+                                <option value="KASIR" class="bg-black">KASIR</option>
+                            </select>
+                        </div>
+                        <button onclick="resetData()" class="text-xs bg-red-950/80 text-red-400 border border-red-600 hover:bg-red-900 px-3 py-2 rounded-lg font-bold transition tracking-wide shadow-[0_0_8px_rgba(239,68,68,0.4)]">
+                            RESET SEMUA DATA
+                        </button>
+                    </div>
+                </div>
+
+                <div class="neon-border-wrapper">
+                    <div class="neon-content overflow-hidden">
+                        <div class="px-6 py-4 border-b border-yellow-500/30">
+                            <h2 class="text-base font-bold font-digital tracking-wide neon-text">DAFTAR JADWAL OFFDAY (ADMIN)</h2>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="bg-yellow-500/10 text-yellow-300 text-xs font-bold font-digital tracking-wider border-b border-yellow-500/30">
+                                        <th class="px-6 py-3">TANGGAL</th>
+                                        <th class="px-6 py-3">DIVISI</th>
+                                        <th class="px-6 py-3">SHIFT PAGI (1/1)</th>
+                                        <th class="px-6 py-3">SHIFT MALAM (1/1)</th>
+                                        <th class="px-6 py-3 text-center">AKSI</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tableBody" class="divide-y divide-yellow-500/20 text-sm font-digital">
+                                    <!-- Data Firebase -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 
     <script>
         const firebaseConfig = {
-            apiKey: "AIzaSyDzGanmCbR1nMYzOr7CzhIlN1E_9lMUzE",
-            authDomain: "offday-58776.firebaseapp.com",
-            databaseURL: "https://offday-58776-default-rtdb.europe-west1.firebasedatabase.app",
-            projectId: "offday-58776",
-            storageBucket: "offday-58776.firebasestorage.app",
-            messagingSenderId: "550746205844",
-            appId: "1:550746205844:web:5cd9b900d628f4d612ce81"
+            apiKey: "AIzaSyCoYy_QgZ4i7NeWHkLGhcicJRDFEITzxLM",
+            authDomain: "offday-cebb2.firebaseapp.com",
+            databaseURL: "https://offday-cebb2-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "offday-cebb2",
+            storageBucket: "offday-cebb2.firebasestorage.app",
+            messagingSenderId: "700101138134",
+            appId: "1:700101138134:web:6b952e04c91d20287ddb77",
+            measurementId: "G-42TCRY5BSH"
         };
 
         firebase.initializeApp(firebaseConfig);
         const rtdb = firebase.database();
 
-        function loadAllPengajuan() {
-            const ref = rtdb.ref('pengajuan_offday');
-            ref.on('value', (snapshot) => {
-                const tbody = document.getElementById('adminTableBody');
-                tbody.innerHTML = "";
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('digitalClock').textContent = 
+                String(now.getHours()).padStart(2, '0') + ':' + 
+                String(now.getMinutes()).padStart(2, '0') + ':' + 
+                String(now.getSeconds()).padStart(2, '0');
+            
+            document.getElementById('digitalDate').textContent = 
+                String(now.getDate()).padStart(2, '0') + '/' + 
+                String(now.getMonth() + 1).padStart(2, '0') + '/' + 
+                now.getFullYear();
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
 
-                if (!snapshot.exists()) {
-                    tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-gray-400">Belum ada pengajuan offday.</td></tr>`;
-                    return;
-                }
+        const karyawanData = {
+            "CS": [
+                "ANDRE WELLYANTO", "MARTIN PANGKAWIRA", "DICKY WIJAYA", 
+                "MUHAMMAD RAMADAN HUTAGALUNG", "JEKI SYAHPUTRA GINTING", 
+                "AISYATUN MUKARROMAH", "PANI PRADENKA", "BILKIS ARI ADI NANTA", 
+                "IDRIS", "RONI HARI ANAN", "MUHAMMAD AGUS SALIM", 
+                "HABI RAHMAD", "SANDRES MUDA MANIK", "ANDRE NOVELA", 
+                "AGUS ANGGARA SANJAYA DAMANIK"
+            ],
+            "KAPTEN": [
+                "ICHA ANANDA ISFI", "RAFLI RINALDI", "GUSTI IRWANDA", "OKI SAN JAYA"
+            ],
+            "KASIR": [
+                "MUHAMMAD ZULFA", "DANIEL SIAHAAN", "DIAN SYAHPUTRA", 
+                "OKTO SURYADI", "WENINA ALEXANDRA HUTABARAT", "AKASH VIKNESH", 
+                "WILIA ANANDA", "PUTRI NAZWA NASUTION", "IRFAN ROSANDY NASUTION", 
+                "ADITYA NUGROHO", "AKAS SUWADEN", "BULAN MEI YANTI", 
+                "RATNA SARI", "YUSUF RAHMAN", "YURIKA NASYIWA", 
+                "ALDINO FAJAR", "MESTIKA SAFITRI SIMBOLON"
+            ]
+        };
 
-                snapshot.forEach((childSnapshot) => {
-                    const id = childSnapshot.key;
-                    const data = childSnapshot.val();
+        let offdayData = {};
+        const form = document.getElementById('offdayForm');
+        const divisiSelect = document.getElementById('divisi');
+        const namaSelect = document.getElementById('nama');
+        const alertBox = document.getElementById('alertBox');
+        const tableBody = document.getElementById('tableBody');
+        const filterDivisi = document.getElementById('filterDivisi');
 
-                    let statusBadge = `<span class="px-2 py-1 bg-yellow-900/50 text-yellow-300 border border-yellow-500 rounded text-xs font-semibold">Pending</span>`;
-                    if (data.status === 'Disetujui') {
-                        statusBadge = `<span class="px-2 py-1 bg-green-900/50 text-green-300 border border-green-500 rounded text-xs font-semibold">Disetujui</span>`;
-                    } else if (data.status === 'Ditolak') {
-                        statusBadge = `<span class="px-2 py-1 bg-red-900/50 text-red-300 border border-red-500 rounded text-xs font-semibold">Ditolak</span>`;
-                    }
+        rtdb.ref('offdayData_v5').on('value', (snapshot) => {
+            offdayData = snapshot.val() || {};
+            renderTable();
+        });
 
-                    const row = `
-                        <tr class="border-b border-gray-800 hover:bg-slate-800/50">
-                            <td class="p-3 text-amber-200">${data.email}</td>
-                            <td class="p-3">${data.tanggal}</td>
-                            <td class="p-3 text-gray-300">${data.alasan}</td>
-                            <td class="p-3">${statusBadge}</td>
-                            <td class="p-3 text-center space-x-2">
-                                <button onclick="updateStatus('${id}', 'Disetujui')" class="px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded text-xs font-bold">Setujui</button>
-                                <button onclick="updateStatus('${id}', 'Ditolak')" class="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-xs font-bold">Tolak</button>
-                            </td>
-                        </tr>
-                    `;
-                    tbody.innerHTML += row;
+        function updateKaryawanList() {
+            const selectedDivisi = divisiSelect.value;
+            namaSelect.innerHTML = '<option value="" class="bg-black">Pilih Karyawan</option>';
+            if (selectedDivisi && karyawanData[selectedDivisi]) {
+                karyawanData[selectedDivisi].forEach(nama => {
+                    const option = document.createElement('option');
+                    option.value = nama;
+                    option.textContent = nama;
+                    option.className = "bg-black";
+                    namaSelect.appendChild(option);
                 });
+            }
+        }
+
+        function showAlert(message, type = 'error') {
+            alertBox.textContent = message;
+            alertBox.classList.remove('hidden', 'bg-red-950', 'text-red-300', 'bg-green-950', 'text-green-300');
+            if (type === 'error') {
+                alertBox.classList.add('bg-red-950', 'text-red-300', 'border', 'border-red-500');
+            } else {
+                alertBox.classList.add('bg-green-950', 'text-green-300', 'border', 'border-green-500');
+            }
+            setTimeout(() => { alertBox.classList.add('hidden'); }, 5000);
+        }
+
+        function renderTable() {
+            tableBody.innerHTML = '';
+            const filter = filterDivisi.value;
+            const dates = Object.keys(offdayData).sort();
+            let rowsToDisplay = [];
+
+            dates.forEach(tanggal => {
+                const divisions = Object.keys(offdayData[tanggal]);
+                divisions.forEach(divisi => {
+                    if (filter === 'ALL' || filter === divisi) {
+                        const dataDiv = offdayData[tanggal][divisi];
+                        if (dataDiv.Pagi || dataDiv.Malam) {
+                            rowsToDisplay.push({ tanggal, divisi, Pagi: dataDiv.Pagi, Malam: dataDiv.Malam });
+                        }
+                    }
+                });
+            });
+
+            if (rowsToDisplay.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="5" class="px-6 py-6 text-center text-yellow-500/60">BELUM ADA DATA OFFDAY YANG TERCATAT.</td></tr>`;
+                return;
+            }
+
+            rowsToDisplay.forEach(item => {
+                const tr = document.createElement('tr');
+                let html = `<td class="px-6 py-4 font-bold text-white">${item.tanggal}</td>`;
+                html += `<td class="px-6 py-4"><span class="px-2.5 py-0.5 rounded text-xs font-bold bg-yellow-500/20 text-yellow-300 border border-yellow-500/40">${item.divisi}</span></td>`;
+                html += item.Pagi ? `<td class="px-6 py-4"><span class="px-2 py-0.5 rounded text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40">${item.Pagi}</span></td>` : `<td class="px-6 py-4 text-yellow-500/40 italic text-xs">KOSONG</td>`;
+                html += item.Malam ? `<td class="px-6 py-4"><span class="px-2 py-0.5 rounded text-xs font-bold bg-yellow-600/20 text-yellow-200 border border-yellow-600/40">${item.Malam}</span></td>` : `<td class="px-6 py-4 text-yellow-500/40 italic text-xs">KOSONG</td>`;
+                html += `<td class="px-6 py-4 text-center"><button onclick="deleteRecord('${item.tanggal}', '${item.divisi}')" class="text-red-400 hover:text-red-200 text-xs font-bold underline">HAPUS</button></td>`;
+                tr.innerHTML = html;
+                tableBody.appendChild(tr);
             });
         }
 
-        window.updateStatus = async function(id, status) {
-            try {
-                await rtdb.ref('pengajuan_offday/' + id).update({ status: status });
-            } catch (err) {
-                alert("Gagal mengubah status: " + err.message);
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const divisi = divisiSelect.value;
+            const nama = namaSelect.value;
+            const tanggalInput = document.getElementById('tanggal').value;
+            const shift = document.getElementById('shift').value;
+            const targetDate = new Date(tanggalInput);
+
+            const dayOfWeek = targetDate.getDay(); 
+            if (dayOfWeek === 4 && shift === 'Pagi' && (divisi === 'CS' || divisi === 'KAPTEN')) {
+                showAlert(`GAGAL! Divisi ${divisi} untuk Shift Pagi TIDAK BISA mengambil offday di hari Kamis.`);
+                return;
+            }
+
+            if (!offdayData[tanggalInput]) {
+                offdayData[tanggalInput] = {
+                    "CS": { Pagi: null, Malam: null },
+                    "KAPTEN": { Pagi: null, Malam: null },
+                    "KASIR": { Pagi: null, Malam: null }
+                };
+            }
+
+            if (offdayData[tanggalInput][divisi][shift] !== null) {
+                showAlert(`GAGAL! SHIFT ${shift} UNTUK DIVISI ${divisi} PADA TANGGAL ${tanggalInput} SUDAH DIISI OLEH ${offdayData[tanggalInput][divisi][shift]}.`);
+                return;
+            }
+
+            for (let tgl in offdayData) {
+                let currentDivs = offdayData[tgl];
+                for (let d in currentDivs) {
+                    let bookedName = null;
+                    if (currentDivs[d].Pagi === nama) bookedName = currentDivs[d].Pagi;
+                    if (currentDivs[d].Malam === nama) bookedName = currentDivs[d].Malam;
+
+                    if (bookedName) {
+                        let existingDate = new Date(tgl);
+                        let diffDays = Math.round((targetDate - existingDate) / (1000 * 60 * 60 * 24));
+
+                        if (diffDays === 0) {
+                            showAlert(`GAGAL! ${nama} SUDAH TERDAFTAR OFFDAY PADA TANGGAL ${tanggalInput}.`);
+                            return;
+                        }
+                        if (Math.abs(diffDays) < 8) {
+                            showAlert(`GAGAL! ${nama} BARU SAJA OFFDAY PADA TANGGAL ${tgl}. JEDA MINIMAL 8 HARI.`);
+                            return;
+                        }
+                    }
+                }
+            }
+
+            offdayData[tanggalInput][divisi][shift] = nama;
+            
+            rtdb.ref('offdayData_v5').set(offdayData, (error) => {
+                if (error) {
+                    showAlert("Gagal menyimpan ke database!");
+                } else {
+                    showAlert(`BERHASIL! OFFDAY SHIFT ${shift} (${divisi}) DISIMPAN.`, 'success');
+                    form.reset();
+                    namaSelect.innerHTML = '<option value="" class="bg-black">Pilih Divisi Terlebih Dahulu</option>';
+                }
+            });
+        });
+
+        window.deleteRecord = function(tanggal, divisi) {
+            if (confirm(`YAKIN INGIN MENGHAPUS DATA OFFDAY DIVISI ${divisi} TANGGAL ${tanggal}?`)) {
+                offdayData[tanggal][divisi] = { Pagi: null, Malam: null };
+                let isEmpty = true;
+                for (let d in offdayData[tanggal]) {
+                    if (offdayData[tanggal][d].Pagi !== null || offdayData[tanggal][d].Malam !== null) isEmpty = false;
+                }
+                if (isEmpty) delete offdayData[tanggal];
+
+                rtdb.ref('offdayData_v5').set(offdayData, (error) => {
+                    if (!error) showAlert('DATA BERHASIL DIHAPUS.', 'success');
+                });
             }
         };
 
-        loadAllPengajuan();
+        window.resetData = function() {
+            if (confirm('YAKIN INGIN MERESET SELURUH DATA OFFDAY?')) {
+                rtdb.ref('offdayData_v5').remove((error) => {
+                    if (!error) showAlert('SEMUA DATA BERHASIL DIRESET.', 'success');
+                });
+            }
+        };
+
+        renderTable();
     </script>
 </body>
 </html>
