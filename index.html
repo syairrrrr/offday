@@ -62,8 +62,8 @@
             </form>
 
             <div class="mt-4 text-center">
-                <button onclick="runInitialization()" class="text-xs text-amber-400 hover:underline">
-                    Inisialisasi / Daftarkan Semua Akun Staff (Password: 123456)
+                <button onclick="registerAllStaff()" class="text-xs text-amber-400 hover:underline">
+                    🔄 Inisialisasi 36 Akun Staff Sekarang (Password: 123456)
                 </button>
             </div>
         </div>
@@ -113,36 +113,66 @@
 
         let currentUserEmail = "";
 
-        // Daftar email staff yang ada di Firebase Anda
-        const staffEmails = [
-            "bilkisari8678@gmail.com",
-            "dickywijaya03215@gmail.com",
-            "jekisyahputra.smb888@gmail.com",
-            "roniharianan122@gmail.com",
-            "martinpangkawira8@gmail.com",
+        // Daftar 36 Email Staff
+        const allStaffEmails = [
+            "andrewellyanto88.smb88@gmail.com",
             "idrisidr1366@gmail.com",
-            "andrewellyanto88.smb@gmail.com"
+            "martinpangkawira8@gmail.com",
+            "roniharianan122@gmail.com",
+            "jekisyahputra.smb888@gmail.com",
+            "dickywijaya03215@gmail.com",
+            "bilkisari8678@gmail.com",
+            "anovela290@gmail.com",
+            "panipradeka0356@gmail.com",
+            "smudamanik@gmail.com",
+            "muhammadagusalim77@gmail.com",
+            "habirahmad1998@gmail.com",
+            "asanjayadamanik@gmail.com",
+            "aisyatunmukarromah034@gmail.com",
+            "hutagalungmuhammadramadan@gmail.com",
+            "gustiirwanda125@gmail.com",
+            "jayaokisan797@gmail.com",
+            "raflirinaldi8899@gmail.com",
+            "ichaanadaifi88@gmail.com",
+            "wiliaananda53@gmail.com",
+            "adityanugroho251192@gmail.com",
+            "muhammadzulfa1603@gmail.com",
+            "diansyahputra45678@gmail.com",
+            "putrinazwaramadhaninasution@gmail.com",
+            "irfanrosandy25052024@gmail.com",
+            "oktosuryadi63@gmail.com",
+            "akashviknesh88@gmail.com",
+            "aldinofajar005@gmail.com",
+            "weninaalexandrah@gmail.com",
+            "danielsiahaan500@gmail.com",
+            "yusufrahman5871@gmail.com",
+            "mestikasafitrisimbolon888@gmail.com",
+            "bulanmeiyanti888@gmail.com",
+            "suwadenakas@gmail.com",
+            "yurikanasyiwa345@gmail.com",
+            "ratnasari061023@gmail.com"
         ];
 
-        async function runInitialization() {
+        async function registerAllStaff() {
             const successDiv = document.getElementById('loginSuccess');
             const errorDiv = document.getElementById('loginError');
             successDiv.classList.add('hidden');
             errorDiv.classList.add('hidden');
 
+            let count = 0;
             try {
-                for (let email of staffEmails) {
+                for (let email of allStaffEmails) {
                     try {
-                        // Coba buat akun jika belum ada
                         await auth.createUserWithEmailAndPassword(email, "123456");
-                    } catch (err) {
-                        // Kalau akun sudah ada, abaikan errornya
+                        count++;
+                    } catch (e) {
+                        // Jika sudah ada, abaikan
                     }
                 }
-                successDiv.innerText = "Inisialisasi Berhasil! Semua password staff sekarang sudah diset ke: 123456";
+                successDiv.innerText = `Berhasil mendaftarkan akun! (${count} akun baru dibuat dengan password: 123456)`;
                 successDiv.classList.remove('hidden');
             } catch (err) {
-                errorDiv.innerText = "Gagal inisialisasi: " + err.message;
+                errorDiv.innerText = "Error: " + err.message;
                 errorDiv.classList.remove('hidden');
             }
         }
