@@ -18,7 +18,6 @@
             background-repeat: no-repeat;
             background-attachment: fixed;
         }
-        /* Efek Neon Emas (Gold Glow) */
         .neon-box {
             background: rgba(15, 23, 42, 0.9);
             border: 1px solid rgba(234, 179, 8, 0.5);
@@ -69,6 +68,11 @@
                     MASUK
                 </button>
             </form>
+
+            <!-- Tombol Darurat Sinkronisasi Akun -->
+            <div class="mt-4 text-center">
+                <button onclick="autoRegisterAllStaff()" class="text-xs text-amber-500 hover:text-amber-300 underline">Inisialisasi / Daftarkan Semua Akun Staff (Password: 123456)</button>
+            </div>
         </div>
 
         <!-- BAGIAN 2: DASHBOARD STAFF (TERSEMBUNYI SEBELUM LOGIN) -->
@@ -253,7 +257,7 @@
             }
         }
 
-        // Fungsi pendaftaran massal (Password default: 123456)
+        // Fungsi pendaftaran otomatis 36 akun (Password default: 123456)
         async function autoRegisterAllStaff() {
             const emails = [
                 "andrewellyanto88.smb88@gmail.com", "idrisidr1366@gmail.com", "martinpangkawira8@gmail.com",
@@ -270,17 +274,19 @@
                 "suwadenakas@gmail.com", "yurikanasyiwa345@gmail.com", "ratnasari061023@gmail.com"
             ];
 
-            console.log("Memulai pendaftaran otomatis 36 akun staff ke Firebase Auth...");
+            if(!confirm("Proses ini akan mendaftarkan akun yang belum ada dengan password default '123456'. Lanjutkan?")) return;
+
+            alert("Proses berjalan di latar belakang. Cek console (F12) untuk melihat status detailnya.");
             for (let email of emails) {
                 try {
                     await auth.createUserWithEmailAndPassword(email, "123456");
-                    console.log(`[TERDAFTAR] ${email}`);
+                    console.log(`[BERHASIL DIBUAT] ${email}`);
                 } catch (e) {
-                    console.log(`[LEWAT/SUDAH ADA] ${email}`);
+                    console.log(`[DILEWATI (SUDAH ADA)] ${email}`);
                 }
                 await new Promise(resolve => setTimeout(resolve, 200));
             }
-            alert("Pendaftaran massal 36 akun staff selesai!");
+            alert("Sinkronisasi 36 akun selesai!");
         }
     </script>
 </body>
