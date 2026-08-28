@@ -48,6 +48,9 @@
             filter: brightness(1.1);
             box-shadow: 0 4px 15px rgba(250, 204, 21, 0.35);
         }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(9, 10, 15, 0.5); }
+        ::-webkit-scrollbar-thumb { background: rgba(250, 204, 21, 0.3); border-radius: 3px; }
     </style>
 </head>
 <body class="antialiased">
@@ -79,10 +82,10 @@
                         <div>
                             <label class="block font-semibold mb-1 text-slate-200">JENIS INPUT</label>
                             <select id="jenisInput" required class="w-full px-3 py-2.5 rounded-lg input-pro text-xs" onchange="toggleJenisInput()">
-                                <option value="Offday" class="bg-slate-900">Pengajuan Offday (Maks. 2x/Bulan)</option>
+                                <option value="Offday" class="bg-slate-900">Pengajuan Offday</option>
                                 <option value="Cuti" class="bg-slate-900">Pengajuan Cuti (Otomatis Beruntun)</option>
                                 <option value="ShiftStart" class="bg-slate-900">Set Shift Berkelanjutan</option>
-                                <option value="Change" class="bg-slate-900">Change Shift (Rotasi Seterusnya)</option>
+                                <option value="Change" class="bg-slate-900">Change Shift</option>
                             </select>
                         </div>
 
@@ -98,15 +101,19 @@
 
                         <div>
                             <label class="block font-semibold mb-1 text-slate-200">NAMA KARYAWAN</label>
-                            <select id="nama" required class="w-full px-3 py-2.5 rounded-lg input-pro text-xs" onchange="checkSisaCutiInfo()">
+                            <select id="nama" required class="w-full px-3 py-2.5 rounded-lg input-pro text-xs">
                                 <option value="" class="bg-slate-900">-- Pilih Divisi Terlebih Dahulu --</option>
                             </select>
-                            <div id="infoSisaCuti" class="mt-1.5 text-[11px] text-yellow-400 font-semibold hidden"></div>
                         </div>
 
                         <div id="tanggalGroup">
                             <label class="block font-semibold mb-1 text-slate-200" id="labelTanggal">TANGGAL OFFDAY</label>
                             <input type="date" id="tanggal" required class="w-full px-3 py-2.5 rounded-lg input-pro text-xs cursor-pointer">
+                        </div>
+
+                        <div id="jumlahCutiGroup" class="hidden">
+                            <label class="block font-semibold mb-1 text-slate-200">JUMLAH HARI CUTI BERUNTUN</label>
+                            <input type="number" id="jumlahCuti" min="1" max="31" value="12" class="w-full px-3 py-2.5 rounded-lg input-pro text-xs">
                         </div>
 
                         <div id="shiftGroup">
@@ -129,38 +136,6 @@
                     </form>
                     
                     <div id="alertBox" class="mt-4 hidden p-3 rounded-lg text-xs font-mono-code"></div>
-                </div>
-
-                <div class="card-container rounded-xl p-5">
-                    <h2 class="text-xs font-bold tracking-wide text-yellow-400 font-mono-code uppercase mb-3 pb-2 border-b border-yellow-500/20">Tambah Kuota Cuti Manual</h2>
-                    <form id="extraCutiForm" class="space-y-3 text-xs font-mono-code">
-                        <div>
-                            <label class="block font-semibold mb-1 text-slate-200">BULAN</label>
-                            <input type="month" id="extraBulan" required class="w-full px-3 py-2 rounded-lg input-pro text-xs">
-                        </div>
-                        <div>
-                            <label class="block font-semibold mb-1 text-slate-200">DIVISI</label>
-                            <select id="extraDivisi" required class="w-full px-3 py-2 rounded-lg input-pro text-xs" onchange="updateExtraKaryawanList()">
-                                <option value="" class="bg-slate-900">-- Pilih Divisi --</option>
-                                <option value="CS" class="bg-slate-900">Customer Service (CS)</option>
-                                <option value="KAPTEN" class="bg-slate-900">Kapten</option>
-                                <option value="KASIR" class="bg-slate-900">Kasir</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block font-semibold mb-1 text-slate-200">NAMA KARYAWAN</label>
-                            <select id="extraNama" required class="w-full px-3 py-2 rounded-lg input-pro text-xs">
-                                <option value="" class="bg-slate-900">-- Pilih Karyawan --</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block font-semibold mb-1 text-slate-200">TAMBAHAN HARI</label>
-                            <input type="number" id="extraJumlah" min="1" value="1" required class="w-full px-3 py-2 rounded-lg input-pro text-xs">
-                        </div>
-                        <button type="submit" class="w-full py-2.5 px-4 rounded-lg bg-yellow-500 hover:bg-yellow-400 text-slate-950 font-bold uppercase tracking-wider text-xs shadow transition">
-                            SIMPAN TAMBAHAN CUTI
-                        </button>
-                    </form>
                 </div>
             </div>
 
@@ -193,7 +168,6 @@
                     </div>
                 </div>
             </div>
-
         </div>
     </div>
 
@@ -215,7 +189,6 @@
         const now = new Date();
         const currentYearMonth = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
         document.getElementById('filterBulan').value = currentYearMonth;
-        document.getElementById('extraBulan').value = currentYearMonth;
 
         const karyawanData = {
             "CS": [
@@ -241,7 +214,6 @@
 
         let offdayData = {};
         let shiftStartData = {}; 
-        let extraCutiData = {};
 
         const form = document.getElementById('offdayForm');
         const jenisInput = document.getElementById('jenisInput');
@@ -250,6 +222,8 @@
         const tanggalGroup = document.getElementById('tanggalGroup');
         const labelTanggal = document.getElementById('labelTanggal');
         const tanggalInput = document.getElementById('tanggal');
+        const jumlahCutiGroup = document.getElementById('jumlahCutiGroup');
+        const jumlahCutiInput = document.getElementById('jumlahCuti');
         const shiftGroup = document.getElementById('shiftGroup');
         const labelShift = document.getElementById('labelShift');
         const shiftSelect = document.getElementById('shift');
@@ -257,18 +231,10 @@
         const filterDivisi = document.getElementById('filterDivisi');
         const filterBulan = document.getElementById('filterBulan');
         const matrixTable = document.getElementById('matrixTable');
-        const infoSisaCuti = document.getElementById('infoSisaCuti');
         const formPanelTitle = document.getElementById('formPanelTitle');
         const btnSubmitForm = document.getElementById('btnSubmitForm');
         const btnCancelEdit = document.getElementById('btnCancelEdit');
 
-        const extraCutiForm = document.getElementById('extraCutiForm');
-        const extraDivisi = document.getElementById('extraDivisi');
-        const extraNama = document.getElementById('extraNama');
-        const extraBulan = document.getElementById('extraBulan');
-        const extraJumlah = document.getElementById('extraJumlah');
-
-        // Realtime Listeners Firebase
         rtdb.ref('offdayData_v7').on('value', (snapshot) => {
             offdayData = snapshot.val() || {};
             renderMatrix();
@@ -279,13 +245,9 @@
             renderMatrix();
         });
 
-        rtdb.ref('extraCuti_v7').on('value', (snapshot) => {
-            extraCutiData = snapshot.val() || {};
-            checkSisaCutiInfo();
-        });
-
         function toggleJenisInput() {
             const val = jenisInput.value;
+            jumlahCutiGroup.classList.add('hidden');
             if (val === 'ShiftStart') {
                 tanggalGroup.classList.remove('hidden');
                 tanggalInput.setAttribute('required', 'true');
@@ -314,6 +276,7 @@
                 tanggalGroup.classList.remove('hidden');
                 tanggalInput.setAttribute('required', 'true');
                 labelTanggal.textContent = "TANGGAL MULAI CUTI";
+                jumlahCutiGroup.classList.remove('hidden');
                 shiftGroup.classList.add('hidden');
                 shiftSelect.removeAttribute('required');
             } else { 
@@ -343,21 +306,6 @@
                     namaSelect.appendChild(option);
                 });
             }
-            checkSisaCutiInfo();
-        }
-
-        function updateExtraKaryawanList() {
-            const selectedDivisi = extraDivisi.value;
-            extraNama.innerHTML = '<option value="">-- Pilih Karyawan --</option>';
-            if (selectedDivisi && karyawanData[selectedDivisi]) {
-                karyawanData[selectedDivisi].forEach(nama => {
-                    const option = document.createElement('option');
-                    option.value = nama;
-                    option.textContent = nama;
-                    option.className = "bg-slate-900";
-                    extraNama.appendChild(option);
-                });
-            }
         }
 
         function showAlert(message, type = 'error') {
@@ -369,51 +317,6 @@
                 alertBox.classList.add('bg-emerald-950/80', 'text-emerald-300', 'border', 'border-emerald-600');
             }
             setTimeout(() => { alertBox.classList.add('hidden'); }, 5000);
-        }
-
-        function isHariTerakhirBulan(tanggalStr) {
-            if (!tanggalStr) return false;
-            let tgl = new Date(tanggalStr);
-            let tahun = tgl.getFullYear();
-            let bulan = tgl.getMonth();
-            let hari = tgl.getDate();
-            let hariTerakhir = new Date(tahun, bulan + 1, 0).getDate();
-            // Hanya mengecek persis pada hari terakhir bulan tersebut (tanggal 30 atau 31 tergantung bulannya)
-            return hari === hariTerakhir;
-        }
-
-        function getShiftStaffPadaTanggal(divisi, nama, dateStr, bulanKey) {
-            let activeShift = "";
-            if (shiftStartData[divisi] && shiftStartData[divisi][nama]) {
-                activeShift = shiftStartData[divisi][nama].toUpperCase();
-            }
-
-            if (offdayData[bulanKey] && offdayData[bulanKey][nama]) {
-                let targetDate = new Date(dateStr);
-                let staffRecords = offdayData[bulanKey][nama];
-                
-                for (let [dKey, val] of Object.entries(staffRecords)) {
-                    let dDate = new Date(dKey);
-                    if (dDate <= targetDate) {
-                        if (val === 'CHANGE_SET_MALAM') activeShift = 'MALAM';
-                        if (val === 'CHANGE_SET_PAGI') activeShift = 'PAGI';
-                    }
-                }
-            }
-            return activeShift || 'PAGI';
-        }
-
-        function checkSisaCutiInfo() {
-            const divisi = divisiSelect.value;
-            const nama = namaSelect.value;
-            const selectedMonth = filterBulan.value;
-
-            if (!divisi || !nama || !selectedMonth) {
-                infoSisaCuti.classList.add('hidden');
-                return;
-            }
-            infoSisaCuti.classList.remove('hidden');
-            infoSisaCuti.textContent = `Info: Kuota offday standar adalah 2 kali sebulan untuk ${nama}`;
         }
 
         function renderMatrix() {
@@ -518,13 +421,13 @@
 
         function resetJadwalStaff(divisi, nama) {
             const selectedMonth = filterBulan.value;
-            if (!confirm(`Apakah Anda yakin ingin meriset/menghapus semua jadwal khusus (offday/cuti/change shift) untuk ${nama} pada bulan ${selectedMonth}?`)) {
+            if (!confirm(`Apakah Anda yakin ingin mereset/menghapus semua jadwal khusus (offday/cuti/change shift) untuk ${nama} pada bulan ${selectedMonth}?`)) {
                 return;
             }
 
             rtdb.ref(`offdayData_v7/${selectedMonth}/${nama}`).remove((error) => {
                 if (error) {
-                    showAlert("Gagal meriset jadwal staff.");
+                    showAlert("Gagal mereset jadwal staff.");
                 } else {
                     showAlert(`BERHASIL: Jadwal ${nama} pada bulan ${selectedMonth} telah direset.`, 'success');
                 }
@@ -536,7 +439,6 @@
             divisiSelect.value = divisi;
             updateKaryawanList();
             namaSelect.value = nama;
-            checkSisaCutiInfo();
 
             formPanelTitle.textContent = `Ubah Jadwal: ${nama}`;
             btnSubmitForm.textContent = "SIMPAN PERUBAHAN";
@@ -553,44 +455,11 @@
         function cancelEditMode() {
             form.reset();
             document.getElementById('filterBulan').value = currentYearMonth;
-            document.getElementById('extraBulan').value = currentYearMonth;
             formPanelTitle.textContent = "Panel Kontrol Admin";
             btnSubmitForm.textContent = "PROSES DATA ADMIN";
             btnCancelEdit.classList.add('hidden');
             toggleJenisInput();
         }
-
-        extraCutiForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            const bulan = extraBulan.value;
-            const div = extraDivisi.value;
-            const name = extraNama.value;
-            const jumlah = Number(extraJumlah.value);
-
-            if (!bulan || !div || !name) {
-                showAlert("Harap lengkapi form tambahan cuti!");
-                return;
-            }
-
-            if (!extraCutiData || typeof extraCutiData !== 'object') {
-                extraCutiData = {};
-            }
-            if (!extraCutiData[bulan]) {
-                extraCutiData[bulan] = {};
-            }
-
-            extraCutiData[bulan][name] = jumlah;
-
-            rtdb.ref('extraCuti_v7').set(extraCutiData, (error) => {
-                if (error) {
-                    showAlert("Gagal menyimpan tambahan kuota cuti.");
-                } else {
-                    showAlert(`BERHASIL: Kuota cuti ${name} pada bulan ${bulan} ditambah ${jumlah} hari.`, 'success');
-                    extraCutiForm.reset();
-                    document.getElementById('extraBulan').value = currentYearMonth;
-                }
-            });
-        });
 
         form.addEventListener('submit', function(e) {
             e.preventDefault();
@@ -600,93 +469,18 @@
             const tglVal = tanggalInput.value; 
             const shiftVal = shiftSelect.value;
 
-            if (!divisi || !nama || !tglVal) {
-                showAlert("Lengkapi seluruh field formulir utama!");
+            if (!divisi || !nama) {
+                showAlert("Harap pilih divisi dan nama karyawan!");
                 return;
             }
 
-            const bulanKey = tglVal.substring(0, 7); 
+            const bulanKey = tglVal ? tglVal.substring(0, 7) : currentYearMonth;
 
-            if (typeInput === 'Offday') {
-                // Validasi: Tidak boleh mengambil offday tepat di hari terakhir bulan tersebut (misal tgl 31 atau 30)
-                if (isHariTerakhirBulan(tglVal)) {
-                    showAlert(`VALIDASI GAGAL: Karyawan tidak diizinkan mengambil offday tepat di hari terakhir bulan tersebut!`);
-                    return;
-                }
-
-                if (!offdayData[bulanKey]) offdayData[bulanKey] = {};
-                if (!offdayData[bulanKey][nama]) offdayData[bulanKey][nama] = {};
-
-                // Cek kuota offday maksimal 2x sebulan
-                let existingOffdays = Object.entries(offdayData[bulanKey][nama]).filter(([date, val]) => 
-                    (val.toUpperCase() === 'OFFDAY' || val.toUpperCase() === 'OFF') && date !== tglVal
-                );
-
-                if (existingOffdays.length >= 2) {
-                    showAlert(`VALIDASI GAGAL: ${nama} sudah mengambil jatah offday 2 kali pada bulan ini!`);
-                    return;
-                }
-
-                // Cek apakah sudah ada staff lain dalam divisi yang sama pada shift yang sama yang OFF di tanggal tersebut
-                let staffListDivisi = karyawanData[divisi] || [];
-                let targetShiftStaff = getShiftStaffPadaTanggal(divisi, nama, tglVal, bulanKey);
-
-                for (let staffLain of staffListDivisi) {
-                    if (staffLain === nama) continue;
-                    
-                    let isLainOff = false;
-                    if (offdayData[bulanKey] && offdayData[bulanKey][staffLain]) {
-                        let statusLain = offdayData[bulanKey][staffLain][tglVal];
-                        if (statusLain && (statusLain.toUpperCase() === 'OFFDAY' || statusLain.toUpperCase() === 'OFF')) {
-                            isLainOff = true;
-                        }
-                    }
-
-                    if (isLainOff) {
-                        let shiftStaffLain = getShiftStaffPadaTanggal(divisi, staffLain, tglVal, bulanKey);
-                        if (shiftStaffLain === targetShiftStaff) {
-                            showAlert(`VALIDASI GAGAL: Staff ${staffLain} (Shift ${targetShiftStaff}) sudah mengambil offday pada tanggal ${tglVal}. Satu shift hanya boleh 1 orang yang offday!`);
-                            return;
-                        }
-                    }
-                }
-                
-                offdayData[bulanKey][nama][tglVal] = 'OFFDAY';
-
-                rtdb.ref(`offdayData_v7/${bulanKey}/${nama}`).set(offdayData[bulanKey][nama], (error) => {
-                    if (error) showAlert("Gagal menyimpan data offday.");
-                    else {
-                        showAlert(`BERHASIL: Offday ${nama} pada tanggal ${tglVal} disimpan.`, 'success');
-                        cancelEditMode();
-                    }
-                });
-            } else if (typeInput === 'Cuti') {
-                if (!offdayData[bulanKey]) offdayData[bulanKey] = {};
-                if (!offdayData[bulanKey][nama]) offdayData[bulanKey][nama] = {};
-
-                let tglMulai = new Date(tglVal);
-                for (let i = 0; i < 2; i++) { 
-                    let dLoop = new Date(tglMulai);
-                    dLoop.setDate(tglMulai.getDate() + i);
-                    let dStr = dLoop.toISOString().split('T')[0];
-                    offdayData[bulanKey][nama][dStr] = 'CUTI';
-                }
-
-                rtdb.ref(`offdayData_v7/${bulanKey}/${nama}`).set(offdayData[bulanKey][nama], (error) => {
-                    if (error) showAlert("Gagal menyimpan data cuti.");
-                    else {
-                        showAlert(`BERHASIL: Pengajuan cuti beruntun untuk ${nama} berhasil disimpan.`, 'success');
-                        cancelEditMode();
-                    }
-                });
-            } else if (typeInput === 'ShiftStart') {
-                if (!shiftStartData[divisi]) shiftStartData[divisi] = {};
-                shiftStartData[divisi][nama] = shiftVal;
-
+            if (typeInput === 'ShiftStart') {
                 rtdb.ref(`shiftStart_v7/${divisi}/${nama}`).set(shiftVal, (error) => {
-                    if (error) showAlert("Gagal menyimpan shift berkelanjutan.");
+                    if (error) showAlert("Gagal menyimpan shift awal.");
                     else {
-                        showAlert(`BERHASIL: Shift awal ${nama} diset menjadi ${shiftVal}.`, 'success');
+                        showAlert(`BERHASIL: Shift awal ${nama} diatur ke ${shiftVal}.`, 'success');
                         cancelEditMode();
                     }
                 });
@@ -694,19 +488,64 @@
                 if (!offdayData[bulanKey]) offdayData[bulanKey] = {};
                 if (!offdayData[bulanKey][nama]) offdayData[bulanKey][nama] = {};
 
-                let codeKey = "CHANGE_SET_MALAM";
-                let textDesc = "MALAM Seterusnya";
-                if (shiftVal === "Change Pagi") {
-                    codeKey = "CHANGE_SET_PAGI";
-                    textDesc = "PAGI Seterusnya";
-                }
-
-                offdayData[bulanKey][nama][tglVal] = codeKey; 
+                let targetVal = shiftVal === 'Change Malam' ? 'CHANGE_SET_MALAM' : 'CHANGE_SET_PAGI';
+                offdayData[bulanKey][nama][tglVal] = targetVal;
 
                 rtdb.ref(`offdayData_v7/${bulanKey}/${nama}`).set(offdayData[bulanKey][nama], (error) => {
-                    if (error) showAlert("Gagal menyimpan perubahan shift.");
+                    if (error) showAlert("Gagal memproses change shift.");
                     else {
-                        showAlert(`BERHASIL: Rotasi shift ${nama} pada tanggal ${tglVal} diubah menjadi ${textDesc}.`, 'success');
+                        showAlert(`BERHASIL: Change shift ${nama} tersimpan.`, 'success');
+                        cancelEditMode();
+                    }
+                });
+            } else if (typeInput === 'Cuti') {
+                const totalHariCuti = parseInt(jumlahCutiInput.value) || 12;
+                if (!offdayData[bulanKey]) offdayData[bulanKey] = {};
+                if (!offdayData[bulanKey][nama]) offdayData[bulanKey][nama] = {};
+
+                // Loop secara otomatis beruntun sebanyak X hari dari tanggal mulai cuti
+                let startDate = new Date(tglVal);
+                for (let i = 0; i < totalHariCuti; i++) {
+                    let dLoop = new Date(startDate);
+                    dLoop.setDate(startDate.getDate() + i);
+                    
+                    let y = dLoop.getFullYear();
+                    let m = String(dLoop.getMonth() + 1).padStart(2, '0');
+                    let d = String(dLoop.getDate()).padStart(2, '0');
+                    let loopDateStr = `${y}-${m}-${d}`;
+                    let loopBulanKey = `${y}-${m}`;
+
+                    if (!offdayData[loopBulanKey]) offdayData[loopBulanKey] = {};
+                    if (!offdayData[loopBulanKey][nama]) offdayData[loopBulanKey][nama] = {};
+
+                    offdayData[loopBulanKey][nama][loopDateStr] = 'CUTI';
+                }
+
+                // Kirim semua perubahan bulan yang terkena dampak cuti beruntun ke Firebase
+                let updates = {};
+                for (let bKey in offdayData) {
+                    if (offdayData[bKey][nama]) {
+                        updates[`offdayData_v7/${bKey}/${nama}`] = offdayData[bKey][nama];
+                    }
+                }
+
+                rtdb.ref().update(updates, (error) => {
+                    if (error) showAlert("Gagal memproses cuti beruntun.");
+                    else {
+                        showAlert(`BERHASIL: Cuti beruntun selama ${totalHariCuti} hari untuk ${nama} berhasil disimpan.`, 'success');
+                        cancelEditMode();
+                    }
+                });
+            } else { // Offday
+                if (!offdayData[bulanKey]) offdayData[bulanKey] = {};
+                if (!offdayData[bulanKey][nama]) offdayData[bulanKey][nama] = {};
+
+                offdayData[bulanKey][nama][tglVal] = 'OFFDAY';
+
+                rtdb.ref(`offdayData_v7/${bulanKey}/${nama}`).set(offdayData[bulanKey][nama], (error) => {
+                    if (error) showAlert("Gagal memproses offday.");
+                    else {
+                        showAlert(`BERHASIL: Offday untuk ${nama} berhasil disimpan.`, 'success');
                         cancelEditMode();
                     }
                 });
