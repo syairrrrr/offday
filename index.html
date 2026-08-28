@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OFFDAY STAFF GOLTOGEL</title>
+    <title>DASHBORD OFFDAY</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -60,7 +60,7 @@
         <div class="card-container rounded-2xl p-6 md:p-8 max-w-md w-full border border-yellow-500/40 shadow-2xl">
             <div class="text-center mb-6">
                 <span class="w-3 h-3 bg-yellow-400 rounded-full inline-block animate-pulse mb-2"></span>
-                <h2 class="text-lg font-bold font-mono-code text-yellow-400 uppercase tracking-wider">LOGIN</h2>
+                <h2 class="text-lg font-bold font-mono-code text-yellow-400 uppercase tracking-wider">LOGIN PORTAL STAFF</h2>
                 <p class="text-xs text-slate-400 mt-1 font-mono-code">Masukkan Divisi, Nama, dan Password Anda.</p>
             </div>
 
@@ -207,7 +207,7 @@
 
                 <div class="card-container rounded-xl overflow-hidden">
                     <div class="px-6 py-4 border-b border-yellow-500/20 flex justify-between items-center flex-wrap gap-3 font-mono-code">
-                        <h2 class="text-sm font-bold tracking-wide text-yellow-400 uppercase">REKAPITULASI SHIFT & STATUS BULANAN</h2>
+                        <h2 class="text-sm font-bold tracking-wide text-yellow-400 uppercase">JADWAL STAFF GOLTOGEL</h2>
                     </div>
                     
                     <div class="overflow-x-auto max-h-[620px]">
@@ -305,6 +305,23 @@
             passwordsData = snapshot.val() || {};
         });
 
+        // CEK SESI LOGIN SAAT HALAMAN DIMUAT / DI-REFRESH
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedSession = localStorage.getItem('portal_logged_in_user');
+            if (savedSession) {
+                try {
+                    loggedInUser = JSON.parse(savedSession);
+                    sessionInfo.textContent = `Login: ${loggedInUser.nama} (${loggedInUser.divisi})`;
+                    displayDivisi.value = loggedInUser.divisi;
+                    displayNama.value = loggedInUser.nama;
+                    loginModal.classList.add('hidden');
+                    renderMatrix();
+                } catch (e) {
+                    localStorage.removeItem('portal_logged_in_user');
+                }
+            }
+        });
+
         function updateLoginStaffList() {
             const selectedDivisi = loginDivisi.value;
             loginNama.innerHTML = '<option value="">-- Pilih Nama Anda --</option>';
@@ -341,6 +358,10 @@
             }
 
             loggedInUser = { divisi: div, nama: nam };
+            
+            // SIMPAN KE LOCALSTORAGE AGAR TIDAK HILANG SAAT REFRESH
+            localStorage.setItem('portal_logged_in_user', JSON.stringify(loggedInUser));
+
             sessionInfo.textContent = `Login: ${nam} (${div})`;
             displayDivisi.value = div;
             displayNama.value = nam;
@@ -357,6 +378,9 @@
 
         function logoutStaff() {
             loggedInUser = null;
+            // HAPUS SESI DARI LOCALSTORAGE SAAT LOGOUT
+            localStorage.removeItem('portal_logged_in_user');
+
             sessionInfo.textContent = "Belum Login";
             loginForm.reset();
             loginPassword.value = "";
