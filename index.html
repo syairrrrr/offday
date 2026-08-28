@@ -70,7 +70,7 @@
                 </div>
             </div>
             <div class="bg-yellow-500/10 border border-yellow-500/30 rounded-xl px-6 py-2.5 text-xs font-mono-code text-yellow-300 flex items-center gap-2">
-                <span class="font-bold">⚠️ KEBIJAKAN DIVISI:</span> Maksimal **2 kali Offday** per bulan (jarak min. 7 hari kerja). Hari **Kamis** & **Tanggal Terakhir** bulan tersebut dilarang untuk Offday. Cuti bebas diambil kapan saja.
+                <span class="font-bold">⚠️ KEBIJAKAN DIVISI:</span> Maksimal **2 kali Offday** per bulan (jarak min. 7 hari kerja). Hari **Kamis** & **Tanggal Terakhir** dilarang Offday. **1 Shift hanya 1 orang yang offday untuk setiap divisi.** Cuti bebas diambil kapan saja.
             </div>
         </header>
 
@@ -118,7 +118,7 @@
                         </div>
 
                         <div class="text-[11px] text-yellow-400/80 italic" id="infoCatatan">
-                            Info: Offday max 2x sebulan, jarak min 7 hari kerja. (Kamis & Tanggal terakhir bulan dilarang).
+                            Info: Offday max 2x sebulan, jarak min 7 hari kerja. (Kamis & Tanggal terakhir dilarang, 1 shift maks 1 orang offday).
                         </div>
 
                         <button type="submit" class="w-full py-3 px-4 rounded-lg btn-pro tracking-wider uppercase text-xs font-bold shadow-lg mt-2">
@@ -147,7 +147,7 @@
                     
                     <div class="overflow-x-auto max-h-[620px]">
                         <table id="matrixTable" class="w-full text-left border-collapse text-[11px] font-mono-code whitespace-nowrap">
-                            </table>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -245,7 +245,7 @@
             } else {
                 jumlahCutiGroup.classList.add('hidden');
                 labelTanggal.textContent = "TANGGAL OFFDAY";
-                infoCatatan.textContent = "Info: Offday max 2x sebulan, jarak min 7 hari kerja. (Kamis & Tanggal terakhir bulan dilarang).";
+                infoCatatan.textContent = "Info: Offday max 2x sebulan, jarak min 7 hari kerja. (Kamis & Tanggal terakhir dilarang, 1 shift maks 1 orang offday).";
             }
         }
 
@@ -333,6 +333,38 @@
                 }
             }
             return 'PAGI';
+        }
+
+        // Helper untuk menghitung shift spesifik seorang karyawan pada tanggal tertentu secara akurat
+        function getStaffShiftOnDate(divisi, nama, targetDateStr) {
+            let [yTarget, mTarget] = targetDateStr.split('-').map(Number);
+            let targetMonthStr = `${yTarget}-${String(mTarget).padStart(2, '0')}`;
+            let runningShift = getEffectiveInitialShift(divisi, nama, targetMonthStr);
+
+            let checkDate = new Date(yTarget, mTarget - 1, 1);
+            let targetDateObj = new Date(targetDateStr + 'T00:00:00');
+
+            // Hitung hari demi hari dari awal bulan sampai tanggal target
+            let tempDate = new Date(checkDate);
+            while (tempDate <= targetDateObj) {
+                let y = tempDate.getFullYear();
+                let m = String(tempDate.getMonth() + 1).padStart(2, '0');
+                let d = String(tempDate.getDate()).padStart(2, '0');
+                let curDateStr = `${y}-${m}-${d}`;
+                let mKey = `${y}-${m}`;
+
+                if (offdayData[mKey] && offdayData[mKey][nama] && offdayData[mKey][nama][curDateStr]) {
+                    let valData = offdayData[mKey][nama][curDateStr];
+                    if (valData === 'CHANGE_SET_MALAM') runningShift = 'MALAM';
+                    else if (valData === 'CHANGE_SET_PAGI') runningShift = 'PAGI';
+                }
+
+                if (curDateStr === targetDateStr) {
+                    break;
+                }
+                tempDate.setDate(tempDate.getDate() + 1);
+            }
+            return runningShift;
         }
 
         function renderMatrix() {
@@ -495,6 +527,26 @@
                 if (workingDaysCount < 7) {
                     showStaffAlert(`GAGAL: Anda baru melewati ${workingDaysCount} hari kerja. Offday baru dapat diajukan setelah minimal 7 hari kerja!`, "error");
                     return;
+                }
+
+                // VALIDASI BARU: 1 Shift hanya 1 orang yang offday untuk setiap divisi pada tanggal tersebut
+                let staffShiftOnTargetDate = getStaffShiftOnDate(divisi, nama, tglVal); // 'PAGI' atau 'MALAM'
+                let staffListInDivision = karyawanData[divisi] || [];
+
+                for (let otherStaff of staffListInDivision) {
+                    if (otherStaff === nama) continue;
+                    // Cek apakah otherStaff offday pada tanggal tglVal
+                    if (offdayData[bulanKey] && offdayData[bulanKey][otherStaff]) {
+                        let statusOther = offdayData[bulanKey][otherStaff][tglVal];
+                        if (statusOther && (statusOther.toUpperCase() === 'OFFDAY' || statusOther.toUpperCase() === 'OFF')) {
+                            // Cek shift otherStaff pada tanggal tersebut
+                            let otherStaffShift = getStaffShiftOnDate(divisi, otherStaff, tglVal);
+                            if (otherStaffShift === staffShiftOnTargetDate) {
+                                showStaffAlert(`GAGAL: ${otherStaff} dari divisi ${divisi} dengan shift ${staffShiftOnTargetDate} sudah mengambil Offday pada tanggal ${tglVal}. 1 shift hanya diperbolehkan 1 orang yang offday!`, "error");
+                                return;
+                            }
+                        }
+                    }
                 }
             }
 
