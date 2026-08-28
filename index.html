@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Staff Portal - Pengajuan Offday & Cuti</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Firebase SDK Compat -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
@@ -70,14 +69,12 @@
                     <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 bg-blue-600 rounded-sm"></span> MALAM</span>
                 </div>
             </div>
-            <!-- Info Kebijakan Hari Kamis -->
             <div class="bg-yellow-500/10 border border-yellow-500/30 rounded-xl px-6 py-2.5 text-xs font-mono-code text-yellow-300 flex items-center gap-2">
-                <span class="font-bold">⚠️ KEBIJAKAN DIVISI:</span> Seluruh divisi dilarang mengambil Offday atau Cuti pada hari **KAMIS**. Sistem akan menolak otomatis jika tanggal yang diajukan jatuh pada hari Kamis.
+                <span class="font-bold">⚠️ KEBIJAKAN DIVISI:</span> Maksimal **2 kali Offday** per bulan (jarak min. 7 hari kerja). Hari **Kamis** & **Tanggal Terakhir** bulan tersebut dilarang untuk Offday. Cuti bebas diambil kapan saja.
             </div>
         </header>
 
         <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
-            <!-- Form Pengajuan Staff -->
             <div class="lg:col-span-1 space-y-4">
                 <div class="card-container rounded-xl p-5 sticky top-6">
                     <div class="flex items-center justify-between pb-3 mb-4 border-b border-yellow-500/20">
@@ -105,8 +102,8 @@
                         <div>
                             <label class="block font-semibold mb-1 text-slate-200">JENIS PENGAJUAN</label>
                             <select id="jenisPengajuan" required class="w-full px-3 py-2.5 rounded-lg input-pro text-xs" onchange="toggleJenisPengajuan()">
-                                <option value="Offday" class="bg-slate-900">Pengajuan Offday (Maks. 2x/Bulan)</option>
-                                <option value="Cuti" class="bg-slate-900">Pengajuan Cuti (Beruntun)</option>
+                                <option value="Offday" class="bg-slate-900">Pengajuan Offday (Max 2x/Bulan)</option>
+                                <option value="Cuti" class="bg-slate-900">Pengajuan Cuti (Bebas Kapan Saja)</option>
                             </select>
                         </div>
 
@@ -115,14 +112,13 @@
                             <input type="date" id="tanggal" required class="w-full px-3 py-2.5 rounded-lg input-pro text-xs cursor-pointer">
                         </div>
 
-                        <!-- INPUT JUMLAH HARI CUTI -->
                         <div id="jumlahCutiGroup" class="hidden">
                             <label class="block font-semibold mb-1 text-slate-200">JUMLAH HARI CUTI BERUNTUN</label>
                             <input type="number" id="jumlahCuti" min="1" max="60" value="12" class="w-full px-3 py-2.5 rounded-lg input-pro text-xs">
                         </div>
 
                         <div class="text-[11px] text-yellow-400/80 italic" id="infoCatatan">
-                            Info: Offday hanya bulan berjalan & tgl 8 s.d 29. (Hari Kamis dilarang)
+                            Info: Offday max 2x sebulan, jarak min 7 hari kerja. (Kamis & Tanggal terakhir bulan dilarang).
                         </div>
 
                         <button type="submit" class="w-full py-3 px-4 rounded-lg btn-pro tracking-wider uppercase text-xs font-bold shadow-lg mt-2">
@@ -134,7 +130,6 @@
                 </div>
             </div>
 
-            <!-- Tabel Rekapitulasi Shift & Status Bulanan Divisi -->
             <div class="lg:col-span-3 space-y-4">
                 <div class="card-container rounded-xl p-4 flex flex-wrap justify-between items-center gap-4 font-mono-code text-xs">
                     <div class="flex flex-wrap items-center gap-4">
@@ -147,13 +142,12 @@
 
                 <div class="card-container rounded-xl overflow-hidden">
                     <div class="px-6 py-4 border-b border-yellow-500/20 flex justify-between items-center flex-wrap gap-3 font-mono-code">
-                        <h2 class="text-sm font-bold tracking-wide text-yellow-400 uppercase">JADWAL SHIFT GOLTOGEL</h2>
+                        <h2 class="text-sm font-bold tracking-wide text-yellow-400 uppercase">REKAPITULASI SHIFT & STATUS BULANAN</h2>
                     </div>
                     
                     <div class="overflow-x-auto max-h-[620px]">
                         <table id="matrixTable" class="w-full text-left border-collapse text-[11px] font-mono-code whitespace-nowrap">
-                            <!-- Rendered by JS -->
-                        </table>
+                            </table>
                     </div>
                 </div>
             </div>
@@ -247,11 +241,11 @@
             if (val === 'Cuti') {
                 jumlahCutiGroup.classList.remove('hidden');
                 labelTanggal.textContent = "TANGGAL MULAI CUTI";
-                infoCatatan.textContent = "Info: Pengajuan Cuti bersifat beruntun mulai dari tanggal yang dipilih. (Hari Kamis dilarang)";
+                infoCatatan.textContent = "Info: Pengajuan Cuti bersifat beruntun mulai dari tanggal yang dipilih. (Bebas hari apa saja)";
             } else {
                 jumlahCutiGroup.classList.add('hidden');
                 labelTanggal.textContent = "TANGGAL OFFDAY";
-                infoCatatan.textContent = "Info: Offday hanya bulan berjalan & tgl 8 s.d 29. (Hari Kamis dilarang)";
+                infoCatatan.textContent = "Info: Offday max 2x sebulan, jarak min 7 hari kerja. (Kamis & Tanggal terakhir bulan dilarang).";
             }
         }
 
@@ -264,6 +258,81 @@
                 staffAlertBox.classList.add('bg-emerald-950/80', 'text-emerald-300', 'border', 'border-emerald-600');
             }
             setTimeout(() => { staffAlertBox.classList.add('hidden'); }, 6000);
+        }
+
+        function countWorkingDaysBefore(namaKaryawan, targetDateStr) {
+            let targetDate = new Date(targetDateStr + 'T00:00:00');
+            let workingDaysCount = 0;
+            let curr = new Date(targetDate);
+            curr.setDate(curr.getDate() - 1);
+
+            for (let i = 0; i < 60; i++) {
+                let y = curr.getFullYear();
+                let m = String(curr.getMonth() + 1).padStart(2, '0');
+                let d = String(curr.getDate()).padStart(2, '0');
+                let monthStr = `${y}-${m}`;
+                let dateStr = `${y}-${m}-${d}`;
+
+                let isOffOrCuti = false;
+                if (offdayData[monthStr] && offdayData[monthStr][namaKaryawan]) {
+                    let val = offdayData[monthStr][namaKaryawan][dateStr];
+                    if (val && (val.toUpperCase() === 'OFFDAY' || val.toUpperCase() === 'OFF' || val.toUpperCase() === 'CUTI')) {
+                        isOffOrCuti = true;
+                    }
+                }
+
+                if (isOffOrCuti) break;
+
+                let dayOfWeek = curr.getDay();
+                if (dayOfWeek !== 0) {
+                    workingDaysCount++;
+                }
+
+                curr.setDate(curr.getDate() - 1);
+            }
+            return workingDaysCount;
+        }
+
+        function countOffdayThisMonth(namaKaryawan, monthStr) {
+            if (!offdayData[monthStr] || !offdayData[monthStr][namaKaryawan]) return 0;
+            let count = 0;
+            let staffMonthData = offdayData[monthStr][namaKaryawan];
+            for (let dateKey in staffMonthData) {
+                let val = staffMonthData[dateKey];
+                if (val && (val.toUpperCase() === 'OFFDAY' || val.toUpperCase() === 'OFF')) {
+                    count++;
+                }
+            }
+            return count;
+        }
+
+        function getEffectiveInitialShift(divisi, nama, targetMonthStr) {
+            if (shiftStartData[divisi] && shiftStartData[divisi][nama]) {
+                return shiftStartData[divisi][nama].toUpperCase();
+            }
+
+            let [y, m] = targetMonthStr.split('-').map(Number);
+            let checkDate = new Date(y, m - 1, 1);
+
+            for (let i = 0; i < 12; i++) {
+                checkDate.setMonth(checkDate.getMonth() - 1);
+                let pastY = checkDate.getFullYear();
+                let pastM = String(checkDate.getMonth() + 1).padStart(2, '0');
+                let pastMonthStr = `${pastY}-${pastM}`;
+
+                if (offdayData[pastMonthStr] && offdayData[pastMonthStr][nama]) {
+                    let monthData = offdayData[pastMonthStr][nama];
+                    for (let d = 31; d >= 1; d--) {
+                        let dStr = `${pastMonthStr}-${String(d).padStart(2, '0')}`;
+                        if (monthData[dStr]) {
+                            let val = monthData[dStr];
+                            if (val === 'CHANGE_SET_MALAM') return 'MALAM';
+                            if (val === 'CHANGE_SET_PAGI') return 'PAGI';
+                        }
+                    }
+                }
+            }
+            return 'PAGI';
         }
 
         function renderMatrix() {
@@ -280,13 +349,19 @@
             for (let d = 1; d <= daysInMonth; d++) {
                 let dCheck = new Date(year, month - 1, d);
                 let isThurs = dCheck.getDay() === 4;
-                let thStyle = isThurs ? "text-red-400 bg-red-950/30 border-b-2 border-red-500" : "text-slate-200";
-                headerHTML += `<th class="px-2 py-3 min-w-[42px] text-center ${thStyle}" title="${isThurs ? 'Hari Kamis (Libur Offday/Cuti Dilarang)' : ''}">${d}</th>`;
+                let isLast = d === daysInMonth;
+                let thStyle = (isThurs || isLast) ? "text-red-400 bg-red-950/30 border-b-2 border-red-500" : "text-slate-200";
+                headerHTML += `<th class="px-2 py-3 min-w-[42px] text-center ${thStyle}" title="${isThurs ? 'Hari Kamis (Offday Dilarang)' : ''} ${isLast ? 'Tanggal Terakhir (Offday Dilarang)' : ''}">${d}</th>`;
             }
             headerHTML += `</tr></thead>`;
 
             let bodyHTML = `<tbody class="divide-y divide-slate-800/50">`;
             
+            let dailyCounts = {};
+            for (let d = 1; d <= daysInMonth; d++) {
+                dailyCounts[d] = { PAGI: 0, MALAM: 0 };
+            }
+
             if (staffList.length === 0) {
                 bodyHTML += `<tr><td colspan="${daysInMonth + 1}" class="text-center py-4 text-slate-400">Silakan pilih divisi terlebih dahulu.</td></tr>`;
             } else {
@@ -294,28 +369,25 @@
                     bodyHTML += `<tr>`;
                     bodyHTML += `<td class="px-4 py-2.5 font-semibold text-slate-100 sticky left-0 bg-[#0c0e14]/90 z-10">${nama}</td>`;
 
-                    let currentActiveShift = "";
-                    if (shiftStartData[selectedDivisi] && shiftStartData[selectedDivisi][nama]) {
-                        currentActiveShift = shiftStartData[selectedDivisi][nama].toUpperCase();
-                    }
+                    let runningShift = getEffectiveInitialShift(selectedDivisi, nama, selectedMonth);
 
                     for (let d = 1; d <= daysInMonth; d++) {
                         let dateStr = `${selectedMonth}-${String(d).padStart(2, '0')}`;
                         let status = "-";
                         let displayText = "-";
                         let badgeClass = "bg-slate-800/50 text-slate-400";
-
                         let hasSpecialStatus = false;
+
                         if (offdayData[selectedMonth] && offdayData[selectedMonth][nama] && offdayData[selectedMonth][nama][dateStr]) {
                             let valData = offdayData[selectedMonth][nama][dateStr];
                             
                             if (valData === 'CHANGE_SET_MALAM') {
-                                currentActiveShift = 'MALAM';
+                                runningShift = 'MALAM';
                                 status = 'MALAM';
                                 displayText = 'MALAM';
                                 hasSpecialStatus = true;
                             } else if (valData === 'CHANGE_SET_PAGI') {
-                                currentActiveShift = 'PAGI';
+                                runningShift = 'PAGI';
                                 status = 'PAGI';
                                 displayText = 'PAGI';
                                 hasSpecialStatus = true;
@@ -334,14 +406,16 @@
                             }
                         }
 
-                        if (!hasSpecialStatus && currentActiveShift !== "") {
-                            status = currentActiveShift;
+                        if (!hasSpecialStatus) {
+                            status = runningShift;
                             displayText = status;
                         }
 
                         if (status === 'PAGI') {
+                            dailyCounts[d].PAGI++;
                             badgeClass = hasSpecialStatus ? "bg-emerald-900/90 text-emerald-300 border border-emerald-500 font-bold" : "bg-emerald-900/50 text-emerald-400/80";
                         } else if (status === 'MALAM') {
+                            dailyCounts[d].MALAM++;
                             badgeClass = hasSpecialStatus ? "bg-blue-900/90 text-blue-300 border border-blue-500 font-bold" : "bg-blue-950/50 text-blue-400/80";
                         } else if (status === 'CUTI') {
                             badgeClass = "bg-indigo-950/90 text-indigo-300 border border-indigo-500 font-bold";
@@ -356,6 +430,20 @@
                         </td>`;
                     }
 
+                    bodyHTML += `</tr>`;
+                });
+
+                let summaryRows = [
+                    { label: 'TOTAL MASUK PAGI', key: 'PAGI', color: 'text-emerald-400 bg-emerald-950/50' },
+                    { label: 'TOTAL MASUK MALAM', key: 'MALAM', color: 'text-blue-400 bg-blue-950/50' }
+                ];
+
+                summaryRows.forEach(row => {
+                    bodyHTML += `<tr class="border-t border-yellow-500/30 font-bold ${row.color}">`;
+                    bodyHTML += `<td class="px-4 py-2.5 sticky left-0 bg-[#0c0e14] z-10">${row.label}</td>`;
+                    for (let d = 1; d <= daysInMonth; d++) {
+                        bodyHTML += `<td class="px-1 py-2.5 text-center text-xs">${dailyCounts[d][row.key]}</td>`;
+                    }
                     bodyHTML += `</tr>`;
                 });
             }
@@ -381,29 +469,32 @@
             }
 
             const bulanKey = tglVal.substring(0, 7);
+            const [yTarget, mTarget, dTarget] = tglVal.split('-').map(Number);
+            const targetDate = new Date(tglVal + 'T00:00:00');
+            const lastDayObj = new Date(yTarget, mTarget, 0);
+            const isLastDay = targetDate.getDate() === lastDayObj.getDate();
 
-            // VALIDASI HARI KAMIS (Dilarang Offday / Cuti pada hari Kamis)
             if (typeInput === 'Offday') {
-                let targetDate = new Date(tglVal + 'T00:00:00');
                 if (targetDate.getDay() === 4) {
-                    showStaffAlert("GAGAL: Hari Kamis dilarang mengambil Offday untuk semua divisi!", "error");
+                    showStaffAlert("GAGAL: Hari Kamis dilarang mengambil Offday!", "error");
                     return;
                 }
-            } else if (typeInput === 'Cuti') {
-                const totalHariCuti = parseInt(jumlahCutiInput.value) || 12;
-                let startDate = new Date(tglVal + 'T00:00:00');
 
-                // Periksa setiap hari dalam rentang cuti, apakah ada yang jatuh pada hari Kamis
-                for (let i = 0; i < totalHariCuti; i++) {
-                    let dCheck = new Date(startDate);
-                    dCheck.setDate(startDate.getDate() + i);
-                    if (dCheck.getDay() === 4) {
-                        let y = dCheck.getFullYear();
-                        let m = String(dCheck.getMonth() + 1).padStart(2, '0');
-                        let d = String(dCheck.getDate()).padStart(2, '0');
-                        showStaffAlert(`GAGAL: Pengajuan cuti ditolak karena mencakup hari Kamis (${y}-${m}-${d}). Semua divisi dilarang ambil cuti/offday pada hari Kamis!`, "error");
-                        return;
-                    }
+                if (isLastDay) {
+                    showStaffAlert("GAGAL: Tanggal terakhir pada bulan tersebut dilarang mengambil Offday!", "error");
+                    return;
+                }
+
+                let totalOffSoFar = countOffdayThisMonth(nama, bulanKey);
+                if (totalOffSoFar >= 2) {
+                    showStaffAlert(`GAGAL: Anda sudah mengambil ${totalOffSoFar} Offday bulan ini. Maksimal adalah 2 kali sebulan!`, "error");
+                    return;
+                }
+
+                let workingDaysCount = countWorkingDaysBefore(nama, tglVal);
+                if (workingDaysCount < 7) {
+                    showStaffAlert(`GAGAL: Anda baru melewati ${workingDaysCount} hari kerja. Offday baru dapat diajukan setelah minimal 7 hari kerja!`, "error");
+                    return;
                 }
             }
 
@@ -447,7 +538,7 @@
                     }
                 });
 
-            } else { // Offday
+            } else { 
                 if (!offdayData[bulanKey]) offdayData[bulanKey] = {};
                 if (!offdayData[bulanKey][nama]) offdayData[bulanKey][nama] = {};
 
