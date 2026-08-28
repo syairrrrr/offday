@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - Offday & Cuti Management</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Firebase SDK Compat -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
@@ -70,6 +69,9 @@
                     <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 bg-blue-600 rounded-sm"></span> MALAM</span>
                 </div>
             </div>
+            <div class="bg-yellow-500/10 border border-yellow-500/30 rounded-xl px-6 py-2.5 text-xs font-mono-code text-yellow-300 flex items-center gap-2">
+                <span class="font-bold">⚠️ PERHATIAN KEBIJAKAN:</span> Seluruh divisi (CS, Kapten, Kasir) TIDAK DIIZINKAN mengambil Offday atau Cuti pada hari **KAMIS**. Pengajuan yang mencakup hari Kamis akan ditolak secara otomatis oleh sistem.
+            </div>
         </header>
 
         <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
@@ -112,7 +114,6 @@
                             <input type="date" id="tanggal" required class="w-full px-3 py-2.5 rounded-lg input-pro text-xs cursor-pointer">
                         </div>
 
-                        <!-- INPUT JUMLAH HARI CUTI -->
                         <div id="jumlahCutiGroup" class="hidden">
                             <label class="block font-semibold mb-1 text-slate-200">JUMLAH HARI CUTI BERUNTUN</label>
                             <input type="number" id="jumlahCuti" min="1" max="60" value="12" class="w-full px-3 py-2.5 rounded-lg input-pro text-xs">
@@ -166,8 +167,7 @@
                     
                     <div class="overflow-x-auto max-h-[620px]">
                         <table id="matrixTable" class="w-full text-left border-collapse text-[11px] font-mono-code whitespace-nowrap">
-                            <!-- Rendered by JS -->
-                        </table>
+                            </table>
                     </div>
                 </div>
             </div>
@@ -334,7 +334,11 @@
             let headerHTML = `<thead><tr class="bg-slate-950/80 text-yellow-400 font-bold border-b border-yellow-500/30 text-center">`;
             headerHTML += `<th class="px-4 py-3 text-left sticky left-0 bg-[#0c0e14]/90 z-10 min-w-[200px]">NAMA KARYAWAN</th>`;
             for (let d = 1; d <= daysInMonth; d++) {
-                headerHTML += `<th class="px-2 py-3 min-w-[42px] text-center text-slate-200">${d}</th>`;
+                // Beri tanda visual kecil pada header tanggal jika hari tersebut adalah hari Kamis (getDay() === 4)
+                let dCheck = new Date(year, month - 1, d);
+                let isThurs = dCheck.getDay() === 4;
+                let thStyle = isThurs ? "text-red-400 bg-red-950/30 border-b-2 border-red-500" : "text-slate-200";
+                headerHTML += `<th class="px-2 py-3 min-w-[42px] text-center ${thStyle}" title="${isThurs ? 'Hari Kamis (Libur Offday/Cuti Dilarang)' : ''}">${d}</th>`;
             }
             headerHTML += `<th class="px-4 py-3 text-center sticky right-0 bg-[#0c0e14]/90 z-10 min-w-[90px]">AKSI</th>`;
             headerHTML += `</tr></thead>`;
@@ -479,6 +483,31 @@
 
             const bulanKey = tglVal ? tglVal.substring(0, 7) : currentYearMonth;
 
+            // VALIDASI KHUSUS HARI KAMIS (Hanya untuk Offday dan Cuti)
+            if (typeInput === 'Offday') {
+                let targetDate = new Date(tglVal + 'T00:00:00');
+                if (targetDate.getDay() === 4) {
+                    showAlert("GAGAL: Hari Kamis dilarang mengambil Offday untuk semua divisi!", "error");
+                    return;
+                }
+            } else if (typeInput === 'Cuti') {
+                const totalHariCuti = parseInt(jumlahCutiInput.value) || 12;
+                let startDate = new Date(tglVal + 'T00:00:00');
+
+                // Cek apakah ada satupun tanggal di rentang cuti tersebut yang jatuh pada hari Kamis
+                for (let i = 0; i < totalHariCuti; i++) {
+                    let dCheck = new Date(startDate);
+                    dCheck.setDate(startDate.getDate() + i);
+                    if (dCheck.getDay() === 4) {
+                        let y = dCheck.getFullYear();
+                        let m = String(dCheck.getMonth() + 1).padStart(2, '0');
+                        let d = String(dCheck.getDate()).padStart(2, '0');
+                        showAlert(`GAGAL: Pengajuan cuti ditolak karena mencakup hari Kamis (${y}-${m}-${d}). Semua divisi dilarang libur/cuti pada hari Kamis!`, "error");
+                        return;
+                    }
+                }
+            }
+
             if (typeInput === 'ShiftStart') {
                 rtdb.ref(`shiftStart_v7/${divisi}/${nama}`).set(shiftVal, (error) => {
                     if (error) showAlert("Gagal menyimpan shift awal.");
@@ -503,9 +532,7 @@
                 });
             } else if (typeInput === 'Cuti') {
                 const totalHariCuti = parseInt(jumlahCutiInput.value) || 12;
-                
-                // Ambil data eksisting terbaru dari state global
-                let startDate = new Date(tglVal + 'T00:00:00'); // Atur jam aman agar tidak melompat zona waktu
+                let startDate = new Date(tglVal + 'T00:00:00');
 
                 for (let i = 0; i < totalHariCuti; i++) {
                     let dLoop = new Date(startDate);
@@ -523,7 +550,6 @@
                     offdayData[loopBulanKey][nama][loopDateStr] = 'CUTI';
                 }
 
-                // Kirim semua bulan yang terdampak (bisa mencakup bulan ini & bulan berikutnya) secara bersamaan ke Firebase
                 let updates = {};
                 for (let bKey in offdayData) {
                     if (offdayData[bKey][nama]) {
@@ -535,9 +561,8 @@
                     if (error) {
                         showAlert("Gagal memproses cuti beruntun lintas bulan.");
                     } else {
-                        showAlert(`BERHASIL: Cuti beruntun selama ${totalHariCuti} hari untuk ${nama} berhasil disimpan (termasuk ke bulan berikutnya jika ada).`, 'success');
+                        showAlert(`BERHASIL: Cuti beruntun selama ${totalHariCuti} hari untuk ${nama} berhasil disimpan.`, 'success');
                         cancelEditMode();
-                        // Otomatis ubah filter bulan ke bulan awal cuti agar admin bisa langsung melihat hasilnya
                         filterBulan.value = bulanKey;
                         renderMatrix();
                     }
