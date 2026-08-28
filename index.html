@@ -70,7 +70,7 @@
                 </div>
             </div>
             <div class="bg-yellow-500/10 border border-yellow-500/30 rounded-xl px-6 py-2.5 text-xs font-mono-code text-yellow-300 flex items-center gap-2">
-                <span class="font-bold">⚠️ KEBIJAKAN DIVISI:</span> Maksimal **2 kali Offday** per bulan (jarak min. **6 hari kerja**). Hari **Kamis** & **Tanggal Terakhir** dilarang Offday. **1 Shift hanya 1 orang yang offday untuk setiap divisi.** Cuti bebas diambil kapan saja.
+                <span class="font-bold">⚠️ KEBIJAKAN DIVISI:</span> Offday hanya bisa tanggal **8 - 29** saja & Maksimal **2 kali** per bulan (Wajib jarak min. **6 hari kerja**, jika belum 6 hari = Gagal). Hari **Kamis** & **Tanggal Terakhir** dilarang Offday. **1 Shift hanya 1 orang yang offday untuk setiap divisi.**
             </div>
         </header>
 
@@ -102,8 +102,8 @@
                         <div>
                             <label class="block font-semibold mb-1 text-slate-200">JENIS PENGAJUAN</label>
                             <select id="jenisPengajuan" required class="w-full px-3 py-2.5 rounded-lg input-pro text-xs" onchange="toggleJenisPengajuan()">
-                                <option value="Offday" class="bg-slate-900">Pengajuan Offday (Max 2x/Bulan)</option>
-                                <option value="Cuti" class="bg-slate-900">Pengajuan Cuti (Bebas Kapan Saja)</option>
+                                <option value="Offday" class="bg-slate-900">Pengajuan Offday </option>
+                                <option value="Cuti" class="bg-slate-900">Pengajuan Cuti </option>
                             </select>
                         </div>
 
@@ -118,7 +118,7 @@
                         </div>
 
                         <div class="text-[11px] text-yellow-400/80 italic" id="infoCatatan">
-                            Info: Offday max 2x sebulan, jarak min 6 hari kerja. (Kamis & Tanggal terakhir dilarang, 1 shift maks 1 orang offday).
+                            Info: Offday hanya tgl 8-29, max 2x sebulan, jarak min 6 hari kerja (Belum 6 hari = Gagal).
                         </div>
 
                         <button type="submit" class="w-full py-3 px-4 rounded-lg btn-pro tracking-wider uppercase text-xs font-bold shadow-lg mt-2">
@@ -245,7 +245,7 @@
             } else {
                 jumlahCutiGroup.classList.add('hidden');
                 labelTanggal.textContent = "TANGGAL OFFDAY";
-                infoCatatan.textContent = "Info: Offday max 2x sebulan, jarak min 6 hari kerja. (Kamis & Tanggal terakhir dilarang, 1 shift maks 1 orang offday).";
+                infoCatatan.textContent = "Info: Offday hanya tgl 8-29, max 2x sebulan, jarak min 6 hari kerja (Belum 6 hari = Gagal/Tidak bisa offday).";
             }
         }
 
@@ -501,10 +501,17 @@
             const bulanKey = tglVal.substring(0, 7);
             const [yTarget, mTarget, dTarget] = tglVal.split('-').map(Number);
             const targetDate = new Date(tglVal + 'T00:00:00');
+            const dayOfMonth = targetDate.getDate();
             const lastDayObj = new Date(yTarget, mTarget, 0);
             const isLastDay = targetDate.getDate() === lastDayObj.getDate();
 
             if (typeInput === 'Offday') {
+                // VALIDASI: OFFDAY HANYA BISA TANGGAL 8 SAMPAI 29 SAJA
+                if (dayOfMonth < 8 || dayOfMonth > 29) {
+                    showStaffAlert(`GAGAL: Pengajuan Offday hanya diizinkan pada tanggal 8 sampai 29 saja! (Tanggal dipilih: ${dayOfMonth})`, "error");
+                    return;
+                }
+
                 if (targetDate.getDay() === 4) {
                     showStaffAlert("GAGAL: Hari Kamis dilarang mengambil Offday!", "error");
                     return;
@@ -521,10 +528,10 @@
                     return;
                 }
 
-                // VALIDASI JARAK 6 HARI KERJA
+                // VALIDASI: JARAK MINIMAL 6 HARI KERJA
                 let workingDaysCount = countWorkingDaysBefore(nama, tglVal);
                 if (workingDaysCount < 6) {
-                    showStaffAlert(`GAGAL: Anda baru melewati ${workingDaysCount} hari kerja. Offday baru dapat diajukan setelah minimal 6 hari kerja!`, "error");
+                    showStaffAlert(`GAGAL: Anda baru melewati ${workingDaysCount} hari kerja. Belum mencapai minimal 6 hari kerja, sehingga TIDAK BISA OFFDAY!`, "error");
                     return;
                 }
 
