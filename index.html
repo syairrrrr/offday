@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portal Staff - Pengajuan Offday & Cuti</title>
+    <title>Staff Portal - Pengajuan Offday & Cuti</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Firebase SDK Compat -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -22,14 +22,14 @@
         }
         .font-mono-code { font-family: 'JetBrains Mono', monospace; }
         .card-container {
-            background: rgba(12, 14, 20, 0.8);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            background: rgba(12, 14, 20, 0.65);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
             border: 1px solid rgba(250, 204, 21, 0.25);
-            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.8);
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.7);
         }
         .input-pro {
-            background: rgba(8, 9, 13, 0.85);
+            background: rgba(8, 9, 13, 0.75);
             border: 1px solid rgba(250, 204, 21, 0.3);
             color: #f8fafc;
             transition: all 0.25s ease;
@@ -42,7 +42,7 @@
         .btn-pro {
             background: linear-gradient(135deg, #facc15 0%, #ca8a04 100%);
             color: #090a0f;
-            font-weight: 700;
+            font-weight: 600;
             transition: all 0.2s ease;
         }
         .btn-pro:hover {
@@ -52,32 +52,42 @@
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: rgba(9, 10, 15, 0.5); }
         ::-webkit-scrollbar-thumb { background: rgba(250, 204, 21, 0.3); border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(250, 204, 21, 0.5); }
     </style>
 </head>
-<body class="antialiased p-4 lg:p-6">
+<body class="antialiased">
 
-    <div class="max-w-[1700px] mx-auto">
-        <!-- Top Status Bar -->
-        <div class="card-container rounded-xl px-6 py-4 mb-6 flex justify-between items-center flex-wrap gap-4">
-            <div class="flex items-center space-x-3">
-                <span class="w-3 h-3 bg-yellow-400 rounded-full animate-pulse"></span>
-                <span class="text-xs font-mono-code tracking-wider text-yellow-400 uppercase font-bold">PORTAL STAFF - PENGAJUAN OFFDAY & CUTI</span>
+    <div class="max-w-[98%] mx-auto px-4 py-6">
+        <header class="mb-6">
+            <div class="card-container rounded-xl px-6 py-3 flex flex-wrap justify-between items-center gap-4 mb-4">
+                <div class="flex items-center space-x-3">
+                    <span class="w-3 h-3 bg-yellow-400 rounded-full animate-pulse"></span>
+                    <span class="text-xs font-mono-code tracking-wider text-yellow-400 uppercase font-bold">PORTAL STAFF - PENGAJUAN OFFDAY & CUTI</span>
+                </div>
+                <div class="flex items-center gap-4 text-xs font-mono-code text-slate-300">
+                    <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 bg-red-600 rounded-sm"></span> OFFDAY</span>
+                    <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 bg-indigo-600 rounded-sm"></span> CUTI</span>
+                    <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 bg-emerald-600 rounded-sm"></span> PAGI</span>
+                    <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 bg-blue-600 rounded-sm"></span> MALAM</span>
+                </div>
             </div>
-            <div>
-        </div>
+            <!-- Info Kebijakan Hari Kamis -->
+            <div class="bg-yellow-500/10 border border-yellow-500/30 rounded-xl px-6 py-2.5 text-xs font-mono-code text-yellow-300 flex items-center gap-2">
+                <span class="font-bold">⚠️ KEBIJAKAN DIVISI:</span> Seluruh divisi dilarang mengambil Offday atau Cuti pada hari **KAMIS**. Sistem akan menolak otomatis jika tanggal yang diajukan jatuh pada hari Kamis.
+            </div>
+        </header>
 
-        <!-- PANEL STAFF -->
         <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
-            <!-- Kontrol Staff (Kiri) -->
-            <div class="lg:col-span-1">
-                <div class="card-container rounded-xl p-5 font-mono-code sticky top-6">
-                    <h2 class="text-xs font-bold tracking-wider text-yellow-400 uppercase mb-4 pb-2 border-b border-yellow-500/20">FORM PENGAJUAN STAFF</h2>
-                    
-                    <div class="space-y-4 text-xs">
+            <!-- Form Pengajuan Staff -->
+            <div class="lg:col-span-1 space-y-4">
+                <div class="card-container rounded-xl p-5 sticky top-6">
+                    <div class="flex items-center justify-between pb-3 mb-4 border-b border-yellow-500/20">
+                        <h2 class="text-sm font-bold tracking-wide text-yellow-400 font-mono-code uppercase">Form Pengajuan Staff</h2>
+                    </div>
+
+                    <form id="staffForm" class="space-y-4 text-xs font-mono-code">
                         <div>
-                            <label class="block font-semibold mb-1 text-yellow-400/90 tracking-wide uppercase text-[11px]">PILIH DIVISI</label>
-                            <select id="staffDivisiLogin" class="w-full px-3 py-2.5 rounded-lg input-pro text-xs" onchange="updateStaffNamaLogin()">
+                            <label class="block font-semibold mb-1 text-slate-200">PILIH DIVISI</label>
+                            <select id="staffDivisi" required class="w-full px-3 py-2.5 rounded-lg input-pro text-xs" onchange="updateStaffList()">
                                 <option value="" class="bg-slate-900">-- Pilih Divisi --</option>
                                 <option value="CS" class="bg-slate-900">Customer Service (CS)</option>
                                 <option value="KAPTEN" class="bg-slate-900">Kapten</option>
@@ -86,65 +96,63 @@
                         </div>
 
                         <div>
-                            <label class="block font-semibold mb-1 text-yellow-400/90 tracking-wide uppercase text-[11px]">PILIH NAMA ANDA</label>
-                            <select id="staffNamaLogin" class="w-full px-3 py-2.5 rounded-lg input-pro text-xs" onchange="onStaffSelected()">
-                                <option value="" class="bg-slate-900">-- Pilih Nama Staff --</option>
+                            <label class="block font-semibold mb-1 text-slate-200">PILIH NAMA ANDA</label>
+                            <select id="staffNama" required class="w-full px-3 py-2.5 rounded-lg input-pro text-xs">
+                                <option value="" class="bg-slate-900">-- Pilih Divisi Terlebih Dahulu --</option>
                             </select>
                         </div>
 
-                        <div id="staffControlGroup" class="hidden space-y-4 pt-2 border-t border-yellow-500/20">
-                            <div>
-                                <label class="block font-semibold mb-1 text-yellow-400/90 tracking-wide uppercase text-[11px]">JENIS PENGAJUAN</label>
-                                <select id="staffJenisReq" class="w-full px-3 py-2.5 rounded-lg input-pro text-xs" onchange="toggleFormInputType()">
-                                    <option value="Offday" class="bg-slate-900">Pengajuan Offday (Maks. 2x/Bulan)</option>
-                                    <option value="Cuti" class="bg-slate-900">Pengajuan Cuti (Otomatis Full Kuota)</option>
-                                </select>
-                            </div>
-
-                            <div id="containerTanggalTunggal">
-                                <label class="block font-semibold mb-1 text-yellow-400/90 tracking-wide uppercase text-[11px]">TANGGAL OFFDAY</label>
-                                <input type="date" id="staffTanggalReq" class="w-full px-3 py-2.5 rounded-lg input-pro text-xs cursor-pointer">
-                                <p class="text-[10px] text-yellow-400/80 mt-1.5 leading-relaxed">Info: Offday hanya bulan berjalan & tgl 8 s.d 29.</p>
-                            </div>
-
-                            <div id="containerCutiRange" class="hidden space-y-3">
-                                <div>
-                                    <label class="block font-semibold mb-1 text-yellow-400/90 tracking-wide uppercase text-[11px]">TANGGAL MULAI CUTI</label>
-                                    <input type="date" id="staffCutiMulai" class="w-full px-3 py-2.5 rounded-lg input-pro text-xs cursor-pointer">
-                                </div>
-                                <div>
-                                    <label class="block font-semibold mb-1 text-yellow-400/90 tracking-wide uppercase text-[11px]">JUMLAH HARI CUTI (OTOMATIS)</label>
-                                    <input type="number" id="staffCutiJumlahHari" readonly class="w-full px-3 py-2.5 rounded-lg input-pro text-xs bg-slate-950 text-yellow-400 font-bold cursor-not-allowed">
-                                    <p id="infoKuotaCuti" class="text-[10px] text-yellow-400/80 mt-1.5 leading-relaxed">Kuota Otomatis: CS/Kapten 14 Hari, Kasir 12 Hari.</p>
-                                </div>
-                            </div>
-
-                            <button type="button" onclick="submitStaffRequest()" class="w-full py-3 px-4 rounded-lg btn-pro uppercase text-xs tracking-wider shadow mt-2">
-                                KIRIM PENGAJUAN
-                            </button>
+                        <div>
+                            <label class="block font-semibold mb-1 text-slate-200">JENIS PENGAJUAN</label>
+                            <select id="jenisPengajuan" required class="w-full px-3 py-2.5 rounded-lg input-pro text-xs" onchange="toggleJenisPengajuan()">
+                                <option value="Offday" class="bg-slate-900">Pengajuan Offday (Maks. 2x/Bulan)</option>
+                                <option value="Cuti" class="bg-slate-900">Pengajuan Cuti (Beruntun)</option>
+                            </select>
                         </div>
-                    </div>
 
-                    <div id="staffAlertBox" class="mt-4 hidden p-3 rounded-lg text-xs leading-relaxed font-mono-code"></div>
+                        <div id="tanggalGroup">
+                            <label class="block font-semibold mb-1 text-slate-200" id="labelTanggal">TANGGAL OFFDAY</label>
+                            <input type="date" id="tanggal" required class="w-full px-3 py-2.5 rounded-lg input-pro text-xs cursor-pointer">
+                        </div>
+
+                        <!-- INPUT JUMLAH HARI CUTI -->
+                        <div id="jumlahCutiGroup" class="hidden">
+                            <label class="block font-semibold mb-1 text-slate-200">JUMLAH HARI CUTI BERUNTUN</label>
+                            <input type="number" id="jumlahCuti" min="1" max="60" value="12" class="w-full px-3 py-2.5 rounded-lg input-pro text-xs">
+                        </div>
+
+                        <div class="text-[11px] text-yellow-400/80 italic" id="infoCatatan">
+                            Info: Offday hanya bulan berjalan & tgl 8 s.d 29. (Hari Kamis dilarang)
+                        </div>
+
+                        <button type="submit" class="w-full py-3 px-4 rounded-lg btn-pro tracking-wider uppercase text-xs font-bold shadow-lg mt-2">
+                            KIRIM PENGAJUAN
+                        </button>
+                    </form>
+                    
+                    <div id="staffAlertBox" class="mt-4 hidden p-3 rounded-lg text-xs font-mono-code"></div>
                 </div>
             </div>
 
-            <!-- Rekapitulasi Staff (Kanan) -->
-            <div class="lg:col-span-3">
-                <div class="card-container rounded-xl p-5">
-                    <div class="flex flex-wrap items-center justify-between gap-4 mb-5 pb-4 border-b border-yellow-500/20 font-mono-code">
-                        <div class="flex items-center space-x-3">
-                            <span class="text-xs font-bold text-yellow-400 tracking-wider uppercase">REKAPITULASI SHIFT & STATUS BULANAN</span>
-                        </div>
+            <!-- Tabel Rekapitulasi Shift & Status Bulanan Divisi -->
+            <div class="lg:col-span-3 space-y-4">
+                <div class="card-container rounded-xl p-4 flex flex-wrap justify-between items-center gap-4 font-mono-code text-xs">
+                    <div class="flex flex-wrap items-center gap-4">
                         <div>
-                            <label class="block text-[10px] font-semibold text-slate-400 uppercase mb-1">PERIODE BULAN:</label>
-                            <input type="month" id="staffFilterBulan" class="px-3 py-1.5 rounded-lg input-pro text-xs font-mono-code" onchange="renderStaffSchedule()">
+                            <label class="font-semibold block mb-1 text-slate-300">PERIODE BULAN:</label>
+                            <input type="month" id="filterBulan" class="px-3 py-2 rounded-lg input-pro text-xs font-mono-code" onchange="renderMatrix()">
                         </div>
                     </div>
+                </div>
 
-                    <div class="overflow-x-auto min-h-[400px]">
-                        <table id="staffScheduleTable" class="w-full text-center border-collapse text-xs whitespace-nowrap font-mono-code">
-                            <!-- Rendered via JS -->
+                <div class="card-container rounded-xl overflow-hidden">
+                    <div class="px-6 py-4 border-b border-yellow-500/20 flex justify-between items-center flex-wrap gap-3 font-mono-code">
+                        <h2 class="text-sm font-bold tracking-wide text-yellow-400 uppercase">REKAPITULASI SHIFT & STATUS BULANAN</h2>
+                    </div>
+                    
+                    <div class="overflow-x-auto max-h-[620px]">
+                        <table id="matrixTable" class="w-full text-left border-collapse text-[11px] font-mono-code whitespace-nowrap">
+                            <!-- Rendered by JS -->
                         </table>
                     </div>
                 </div>
@@ -169,7 +177,7 @@
 
         const now = new Date();
         const currentYearMonth = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
-        document.getElementById('staffFilterBulan').value = currentYearMonth;
+        document.getElementById('filterBulan').value = currentYearMonth;
 
         const karyawanData = {
             "CS": [
@@ -196,277 +204,269 @@
         let offdayData = {};
         let shiftStartData = {}; 
 
+        const form = document.getElementById('staffForm');
+        const staffDivisi = document.getElementById('staffDivisi');
+        const staffNama = document.getElementById('staffNama');
+        const jenisPengajuan = document.getElementById('jenisPengajuan');
+        const tanggalInput = document.getElementById('tanggal');
+        const labelTanggal = document.getElementById('labelTanggal');
+        const jumlahCutiGroup = document.getElementById('jumlahCutiGroup');
+        const jumlahCutiInput = document.getElementById('jumlahCuti');
+        const infoCatatan = document.getElementById('infoCatatan');
+        const staffAlertBox = document.getElementById('staffAlertBox');
+        const filterBulan = document.getElementById('filterBulan');
+        const matrixTable = document.getElementById('matrixTable');
+
         rtdb.ref('offdayData_v7').on('value', (snapshot) => {
             offdayData = snapshot.val() || {};
-            renderStaffSchedule();
+            renderMatrix();
         });
 
         rtdb.ref('shiftStart_v7').on('value', (snapshot) => {
             shiftStartData = snapshot.val() || {};
-            renderStaffSchedule();
+            renderMatrix();
         });
 
-        const staffDivisiLogin = document.getElementById('staffDivisiLogin');
-        const staffNamaLogin = document.getElementById('staffNamaLogin');
-        const staffControlGroup = document.getElementById('staffControlGroup');
-        const staffJenisReq = document.getElementById('staffJenisReq');
-        const containerTanggalTunggal = document.getElementById('containerTanggalTunggal');
-        const containerCutiRange = document.getElementById('containerCutiRange');
-        const staffTanggalReq = document.getElementById('staffTanggalReq');
-        const staffCutiMulai = document.getElementById('staffCutiMulai');
-        const staffCutiJumlahHari = document.getElementById('staffCutiJumlahHari');
-        const infoKuotaCuti = document.getElementById('infoKuotaCuti');
-        const staffAlertBox = document.getElementById('staffAlertBox');
-        const staffFilterBulan = document.getElementById('staffFilterBulan');
-        const staffScheduleTable = document.getElementById('staffScheduleTable');
-
-        function updateStaffNamaLogin() {
-            const div = staffDivisiLogin.value;
-            staffNamaLogin.innerHTML = '<option value="">-- Pilih Nama Staff --</option>';
-            if (div && karyawanData[div]) {
-                karyawanData[div].forEach(nama => {
-                    const opt = document.createElement('option');
-                    opt.value = nama;
-                    opt.textContent = nama;
-                    opt.className = "bg-slate-900";
-                    staffNamaLogin.appendChild(opt);
+        function updateStaffList() {
+            const selectedDivisi = staffDivisi.value;
+            staffNama.innerHTML = '<option value="">-- Pilih Nama Anda --</option>';
+            if (selectedDivisi && karyawanData[selectedDivisi]) {
+                karyawanData[selectedDivisi].forEach(nama => {
+                    const option = document.createElement('option');
+                    option.value = nama;
+                    option.textContent = nama;
+                    option.className = "bg-slate-900";
+                    staffNama.appendChild(option);
                 });
-
-                if (div === 'CS' || div === 'KAPTEN') {
-                    staffCutiJumlahHari.value = 14;
-                    infoKuotaCuti.textContent = "Kuota Cuti Divisi " + div + " Otomatis Terisi: 14 Hari.";
-                } else {
-                    staffCutiJumlahHari.value = 12;
-                    infoKuotaCuti.textContent = "Kuota Cuti Divisi Kasir Otomatis Terisi: 12 Hari.";
-                }
             }
-            onStaffSelected();
+            renderMatrix();
         }
 
-        function toggleFormInputType() {
-            if (staffJenisReq.value === 'Offday') {
-                containerTanggalTunggal.classList.remove('hidden');
-                containerCutiRange.classList.add('hidden');
+        function toggleJenisPengajuan() {
+            const val = jenisPengajuan.value;
+            if (val === 'Cuti') {
+                jumlahCutiGroup.classList.remove('hidden');
+                labelTanggal.textContent = "TANGGAL MULAI CUTI";
+                infoCatatan.textContent = "Info: Pengajuan Cuti bersifat beruntun mulai dari tanggal yang dipilih. (Hari Kamis dilarang)";
             } else {
-                containerTanggalTunggal.classList.add('hidden');
-                containerCutiRange.classList.remove('hidden');
+                jumlahCutiGroup.classList.add('hidden');
+                labelTanggal.textContent = "TANGGAL OFFDAY";
+                infoCatatan.textContent = "Info: Offday hanya bulan berjalan & tgl 8 s.d 29. (Hari Kamis dilarang)";
             }
         }
 
-        function onStaffSelected() {
-            if (staffNamaLogin.value) staffControlGroup.classList.remove('hidden');
-            else staffControlGroup.classList.add('hidden');
-            renderStaffSchedule();
-        }
-
-        function showStaffAlert(msg, type = 'error') {
-            staffAlertBox.textContent = msg;
-            staffAlertBox.classList.remove('hidden', 'bg-red-950/80', 'text-red-300', 'border', 'border-red-600', 'bg-emerald-950/80', 'text-emerald-300', 'border-emerald-600');
-            if (type === 'error') staffAlertBox.classList.add('bg-red-950/80', 'text-red-300', 'border', 'border-red-600');
-            else staffAlertBox.classList.add('bg-emerald-950/80', 'text-emerald-300', 'border', 'border-emerald-600');
+        function showStaffAlert(message, type = 'error') {
+            staffAlertBox.textContent = message;
+            staffAlertBox.classList.remove('hidden', 'bg-red-950/80', 'text-red-300', 'border-red-600', 'bg-emerald-950/80', 'text-emerald-300', 'border-emerald-600');
+            if (type === 'error') {
+                staffAlertBox.classList.add('bg-red-950/80', 'text-red-300', 'border', 'border-red-600');
+            } else {
+                staffAlertBox.classList.add('bg-emerald-950/80', 'text-emerald-300', 'border', 'border-emerald-600');
+            }
             setTimeout(() => { staffAlertBox.classList.add('hidden'); }, 6000);
         }
 
-        function isHariTerakhirBulan(tanggalStr) {
-            if (!tanggalStr) return false;
-            let tgl = new Date(tanggalStr);
-            let hariTerakhir = new Date(tgl.getFullYear(), tgl.getMonth() + 1, 0).getDate();
-            return tgl.getDate() === hariTerakhir;
-        }
+        function renderMatrix() {
+            const selectedDivisi = staffDivisi.value || "CS";
+            const selectedMonth = filterBulan.value;
+            if (!selectedMonth) return;
 
-        function getShiftStaffPadaTanggal(divisi, nama, dateStr, bulanKey) {
-            let activeShift = "";
-            if (shiftStartData[divisi] && shiftStartData[divisi][nama]) {
-                activeShift = shiftStartData[divisi][nama].toUpperCase();
-            }
+            const [year, month] = selectedMonth.split('-').map(Number);
+            const daysInMonth = new Date(year, month, 0).getDate();
+            const staffList = karyawanData[selectedDivisi] || [];
 
-            if (offdayData[bulanKey] && offdayData[bulanKey][nama]) {
-                let targetDate = new Date(dateStr);
-                let staffRecords = offdayData[bulanKey][nama];
-                for (let [dKey, val] of Object.entries(staffRecords)) {
-                    if (new Date(dKey) <= targetDate) {
-                        if (val === 'CHANGE_SET_MALAM') activeShift = 'MALAM';
-                        if (val === 'CHANGE_SET_PAGI') activeShift = 'PAGI';
-                    }
-                }
-            }
-            return activeShift || 'PAGI';
-        }
-
-        function renderStaffSchedule() {
-            const div = staffDivisiLogin.value;
-            const nama = staffNamaLogin.value;
-            const month = staffFilterBulan.value;
-
-            if (!div || !month) {
-                staffScheduleTable.innerHTML = `<tr><td colspan="31" class="py-8 text-slate-500">Silakan pilih divisi terlebih dahulu.</td></tr>`;
-                return;
-            }
-
-            const [year, mNum] = month.split('-').map(Number);
-            const daysInMonth = new Date(year, mNum, 0).getDate();
-            const listStaffDivisi = karyawanData[div] || [];
-
-            let html = `<thead><tr class="bg-slate-950 text-yellow-400 font-bold border-b border-yellow-500/30">`;
-            html += `<th class="p-2.5 text-left text-yellow-400 sticky left-0 bg-slate-950 z-10 min-w-[200px] border-r border-slate-800">NAMA KARYAWAN</th>`;
+            let headerHTML = `<thead><tr class="bg-slate-950/80 text-yellow-400 font-bold border-b border-yellow-500/30 text-center">`;
+            headerHTML += `<th class="px-4 py-3 text-left sticky left-0 bg-[#0c0e14]/90 z-10 min-w-[200px]">NAMA KARYAWAN</th>`;
             for (let d = 1; d <= daysInMonth; d++) {
-                html += `<th class="p-2 text-center text-slate-300 border-r border-slate-800 w-10">${d}</th>`;
+                let dCheck = new Date(year, month - 1, d);
+                let isThurs = dCheck.getDay() === 4;
+                let thStyle = isThurs ? "text-red-400 bg-red-950/30 border-b-2 border-red-500" : "text-slate-200";
+                headerHTML += `<th class="px-2 py-3 min-w-[42px] text-center ${thStyle}" title="${isThurs ? 'Hari Kamis (Libur Offday/Cuti Dilarang)' : ''}">${d}</th>`;
             }
-            html += `</tr></thead><tbody>`;
+            headerHTML += `</tr></thead>`;
 
-            listStaffDivisi.forEach(staffName => {
-                let isCurrentLoginStaff = (staffName === nama);
-                let rowHighlight = isCurrentLoginStaff ? 'bg-yellow-500/5 font-bold' : '';
-                html += `<tr class="border-b border-slate-800/60 ${rowHighlight}">`;
-                html += `<td class="p-2.5 text-left text-xs ${isCurrentLoginStaff ? 'text-yellow-400 font-bold' : 'text-slate-300'} sticky left-0 bg-slate-900/95 z-10 border-r border-slate-800 truncate max-w-[200px]" title="${staffName}">${staffName}</td>`;
+            let bodyHTML = `<tbody class="divide-y divide-slate-800/50">`;
+            
+            if (staffList.length === 0) {
+                bodyHTML += `<tr><td colspan="${daysInMonth + 1}" class="text-center py-4 text-slate-400">Silakan pilih divisi terlebih dahulu.</td></tr>`;
+            } else {
+                staffList.forEach(nama => {
+                    bodyHTML += `<tr>`;
+                    bodyHTML += `<td class="px-4 py-2.5 font-semibold text-slate-100 sticky left-0 bg-[#0c0e14]/90 z-10">${nama}</td>`;
 
-                let currentActiveShift = "";
-                if (shiftStartData[div] && shiftStartData[div][staffName]) {
-                    currentActiveShift = shiftStartData[div][staffName].toUpperCase();
-                }
-
-                for (let d = 1; d <= daysInMonth; d++) {
-                    let dateStr = `${month}-${String(d).padStart(2, '0')}`;
-                    let status = "-";
-                    let badge = "bg-slate-900/80 text-slate-500";
-                    let hasSpecial = false;
-
-                    if (offdayData[month] && offdayData[month][staffName] && offdayData[month][staffName][dateStr]) {
-                        let val = offdayData[month][staffName][dateStr];
-                        if (val === 'CHANGE_SET_MALAM') { currentActiveShift = 'MALAM'; status = 'CH.MLM'; hasSpecial = true; }
-                        else if (val === 'CHANGE_SET_PAGI') { currentActiveShift = 'PAGI'; status = 'CH.PGI'; hasSpecial = true; }
-                        else if (val.toUpperCase() === 'CUTI') { status = 'CUTI'; hasSpecial = true; }
-                        else if (val.toUpperCase() === 'OFFDAY' || val.toUpperCase() === 'OFF') { status = 'OFF'; hasSpecial = true; }
+                    let currentActiveShift = "";
+                    if (shiftStartData[selectedDivisi] && shiftStartData[selectedDivisi][nama]) {
+                        currentActiveShift = shiftStartData[selectedDivisi][nama].toUpperCase();
                     }
 
-                    if (!hasSpecial && currentActiveShift !== "") status = currentActiveShift.substring(0, 4);
+                    for (let d = 1; d <= daysInMonth; d++) {
+                        let dateStr = `${selectedMonth}-${String(d).padStart(2, '0')}`;
+                        let status = "-";
+                        let displayText = "-";
+                        let badgeClass = "bg-slate-800/50 text-slate-400";
 
-                    if (status === 'PAGI' || status === 'CH.PGI') badge = "bg-emerald-950/80 text-emerald-400 border border-emerald-800/50";
-                    else if (status === 'MALAM' || status === 'CH.MLM') badge = "bg-blue-950/80 text-blue-400 border border-blue-800/50";
-                    else if (status === 'CUTI') badge = "bg-indigo-950/90 text-indigo-300 border border-indigo-800/50 font-bold";
-                    else if (status === 'OFF') badge = "bg-red-950/90 text-red-300 border border-red-800/50 font-bold";
+                        let hasSpecialStatus = false;
+                        if (offdayData[selectedMonth] && offdayData[selectedMonth][nama] && offdayData[selectedMonth][nama][dateStr]) {
+                            let valData = offdayData[selectedMonth][nama][dateStr];
+                            
+                            if (valData === 'CHANGE_SET_MALAM') {
+                                currentActiveShift = 'MALAM';
+                                status = 'MALAM';
+                                displayText = 'MALAM';
+                                hasSpecialStatus = true;
+                            } else if (valData === 'CHANGE_SET_PAGI') {
+                                currentActiveShift = 'PAGI';
+                                status = 'PAGI';
+                                displayText = 'PAGI';
+                                hasSpecialStatus = true;
+                            } else if (valData.toUpperCase() === 'CUTI') {
+                                status = 'CUTI';
+                                displayText = 'CUTI';
+                                hasSpecialStatus = true;
+                            } else if (valData.toUpperCase() === 'OFFDAY' || valData.toUpperCase() === 'OFF') {
+                                status = 'OFF';
+                                displayText = 'OFF';
+                                hasSpecialStatus = true;
+                            } else {
+                                status = valData.toUpperCase();
+                                displayText = status;
+                                hasSpecialStatus = true;
+                            }
+                        }
 
-                    html += `<td class="p-1 border-r border-slate-800/60 text-center"><div class="rounded py-1 px-0.5 text-[10px] ${badge}">${status}</div></td>`;
-                }
-                html += `</tr>`;
-            });
+                        if (!hasSpecialStatus && currentActiveShift !== "") {
+                            status = currentActiveShift;
+                            displayText = status;
+                        }
 
-            html += `</tbody>`;
-            staffScheduleTable.innerHTML = html;
+                        if (status === 'PAGI') {
+                            badgeClass = hasSpecialStatus ? "bg-emerald-900/90 text-emerald-300 border border-emerald-500 font-bold" : "bg-emerald-900/50 text-emerald-400/80";
+                        } else if (status === 'MALAM') {
+                            badgeClass = hasSpecialStatus ? "bg-blue-900/90 text-blue-300 border border-blue-500 font-bold" : "bg-blue-950/50 text-blue-400/80";
+                        } else if (status === 'CUTI') {
+                            badgeClass = "bg-indigo-950/90 text-indigo-300 border border-indigo-500 font-bold";
+                        } else if (status === 'OFF') {
+                            badgeClass = "bg-red-950/90 text-red-300 border border-red-500 font-bold";
+                        }
+
+                        bodyHTML += `<td class="p-1 text-center">
+                            <div class="rounded py-1.5 px-0.5 text-[9.5px] font-bold ${badgeClass}">
+                                ${displayText}
+                            </div>
+                        </td>`;
+                    }
+
+                    bodyHTML += `</tr>`;
+                });
+            }
+
+            bodyHTML += `</tbody>`;
+            matrixTable.innerHTML = headerHTML + bodyHTML;
         }
 
-        function submitStaffRequest() {
-            const div = staffDivisiLogin.value;
-            const nama = staffNamaLogin.value;
-            const jenis = staffJenisReq.value;
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const divisi = staffDivisi.value;
+            const nama = staffNama.value;
+            const typeInput = jenisPengajuan.value;
+            const tglVal = tanggalInput.value;
 
-            if (!div || !nama) {
-                showStaffAlert("Silakan pilih divisi dan nama staff terlebih dahulu!");
+            if (!divisi || !nama) {
+                showStaffAlert("Harap pilih Divisi dan Nama Anda!");
+                return;
+            }
+            if (!tglVal) {
+                showStaffAlert("Harap tentukan tanggal pengajuan!");
                 return;
             }
 
-            if (jenis === 'Offday') {
-                const tglVal = staffTanggalReq.value;
-                if (!tglVal) {
-                    showStaffAlert("Tanggal offday belum dipilih!");
+            const bulanKey = tglVal.substring(0, 7);
+
+            // VALIDASI HARI KAMIS (Dilarang Offday / Cuti pada hari Kamis)
+            if (typeInput === 'Offday') {
+                let targetDate = new Date(tglVal + 'T00:00:00');
+                if (targetDate.getDay() === 4) {
+                    showStaffAlert("GAGAL: Hari Kamis dilarang mengambil Offday untuk semua divisi!", "error");
                     return;
                 }
+            } else if (typeInput === 'Cuti') {
+                const totalHariCuti = parseInt(jumlahCutiInput.value) || 12;
+                let startDate = new Date(tglVal + 'T00:00:00');
 
-                const tglObj = new Date(tglVal);
-                const bulanKey = tglVal.substring(0, 7);
-                const realNow = new Date();
-                const currentMonthKey = realNow.getFullYear() + '-' + String(realNow.getMonth() + 1).padStart(2, '0');
-                
-                if (bulanKey !== currentMonthKey) {
-                    showStaffAlert("PENGAJUAN DITOLAK: Offday mandiri hanya untuk bulan berjalan!");
-                    return;
-                }
-
-                const tglHari = tglObj.getDate();
-                if (tglHari < 8 || tglHari > 29) {
-                    showStaffAlert("PENGAJUAN DITOLAK: Offday hanya dapat dilakukan mulai tanggal 8 sampai tanggal 29!");
-                    return;
-                }
-
-                if (isHariTerakhirBulan(tglVal)) {
-                    showStaffAlert("PENGAJUAN DITOLAK: Tidak diizinkan mengambil offday di hari terakhir bulan.");
-                    return;
-                }
-
-                if (!offdayData[bulanKey]) offdayData[bulanKey] = {};
-                if (!offdayData[bulanKey][nama]) offdayData[bulanKey][nama] = {};
-
-                let existingOffdays = Object.entries(offdayData[bulanKey][nama]).filter(([date, val]) => 
-                    (val.toUpperCase() === 'OFFDAY' || val.toUpperCase() === 'OFF') && date !== tglVal
-                );
-
-                if (existingOffdays.length >= 2) {
-                    showStaffAlert("PENGAJUAN DITOLAK: Anda sudah mengambil jatah offday 2 kali bulan ini!");
-                    return;
-                }
-
-                let targetShiftStaff = getShiftStaffPadaTanggal(div, nama, tglVal, bulanKey);
-                for (let staffLain of (karyawanData[div] || [])) {
-                    if (staffLain === nama) continue;
-                    if (offdayData[bulanKey]?.[staffLain]?.[tglVal]?.toUpperCase() === 'OFF' || offdayData[bulanKey]?.[staffLain]?.[tglVal]?.toUpperCase() === 'OFFDAY') {
-                        if (getShiftStaffPadaTanggal(div, staffLain, tglVal, bulanKey) === targetShiftStaff) {
-                            showStaffAlert(`PENGAJUAN DITOLAK: Rekan (${staffLain}) shift ${targetShiftStaff} sudah off pada tanggal tersebut.`);
-                            return;
-                        }
+                // Periksa setiap hari dalam rentang cuti, apakah ada yang jatuh pada hari Kamis
+                for (let i = 0; i < totalHariCuti; i++) {
+                    let dCheck = new Date(startDate);
+                    dCheck.setDate(startDate.getDate() + i);
+                    if (dCheck.getDay() === 4) {
+                        let y = dCheck.getFullYear();
+                        let m = String(dCheck.getMonth() + 1).padStart(2, '0');
+                        let d = String(dCheck.getDate()).padStart(2, '0');
+                        showStaffAlert(`GAGAL: Pengajuan cuti ditolak karena mencakup hari Kamis (${y}-${m}-${d}). Semua divisi dilarang ambil cuti/offday pada hari Kamis!`, "error");
+                        return;
                     }
                 }
+            }
 
-                offdayData[bulanKey][nama][tglVal] = 'OFFDAY';
-                rtdb.ref(`offdayData_v7/${bulanKey}/${nama}`).set(offdayData[bulanKey][nama], (error) => {
-                    if (error) showStaffAlert("Gagal mengirim pengajuan.");
-                    else {
-                        showStaffAlert("BERHASIL: Pengajuan offday disimpan.", 'success');
-                        staffTanggalReq.value = '';
-                        document.getElementById('staffFilterBulan').value = bulanKey;
-                    }
-                });
+            if (typeInput === 'Cuti') {
+                const totalHariCuti = parseInt(jumlahCutiInput.value) || 12;
+                let startDate = new Date(tglVal + 'T00:00:00');
 
-            } else if (jenis === 'Cuti') {
-                const tglMulaiStr = staffCutiMulai.value;
-                const jumlahHari = parseInt(staffCutiJumlahHari.value) || (div === 'KASIR' ? 12 : 14);
-
-                if (!tglMulaiStr) {
-                    showStaffAlert("Tanggal mulai cuti belum dipilih!");
-                    return;
-                }
-
-                let tglMulai = new Date(tglMulaiStr);
-                let updates = {};
-                let targetBulanPertama = "";
-
-                for (let i = 0; i < jumlahHari; i++) {
-                    let dLoop = new Date(tglMulai);
-                    dLoop.setDate(tglMulai.getDate() + i);
+                for (let i = 0; i < totalHariCuti; i++) {
+                    let dLoop = new Date(startDate);
+                    dLoop.setDate(startDate.getDate() + i);
                     
-                    let thn = dLoop.getFullYear();
-                    let bln = String(dLoop.getMonth() + 1).padStart(2, '0');
-                    let hari = String(dLoop.getDate()).padStart(2, '0');
-                    let dStr = `${thn}-${bln}-${hari}`;
-                    let bKey = `${thn}-${bln}`;
+                    let y = dLoop.getFullYear();
+                    let m = String(dLoop.getMonth() + 1).padStart(2, '0');
+                    let d = String(dLoop.getDate()).padStart(2, '0');
+                    let loopDateStr = `${y}-${m}-${d}`;
+                    let loopBulanKey = `${y}-${m}`;
 
-                    if (i === 0) targetBulanPertama = bKey;
-                    if (!offdayData[bKey]) offdayData[bKey] = {};
-                    if (!offdayData[bKey][nama]) offdayData[bKey][nama] = {};
+                    if (!offdayData[loopBulanKey]) offdayData[loopBulanKey] = {};
+                    if (!offdayData[loopBulanKey][nama]) offdayData[loopBulanKey][nama] = {};
 
-                    offdayData[bKey][nama][dStr] = 'CUTI';
-                    updates[`offdayData_v7/${bKey}/${nama}`] = offdayData[bKey][nama];
+                    offdayData[loopBulanKey][nama][loopDateStr] = 'CUTI';
+                }
+
+                let updates = {};
+                for (let bKey in offdayData) {
+                    if (offdayData[bKey][nama]) {
+                        updates[`offdayData_v7/${bKey}/${nama}`] = offdayData[bKey][nama];
+                    }
                 }
 
                 rtdb.ref().update(updates, (error) => {
-                    if (error) showStaffAlert("Gagal mengirim pengajuan cuti.");
-                    else {
-                        showStaffAlert(`BERHASIL: Pengajuan cuti otomatis ${jumlahHari} hari tersimpan (mendukung lintas bulan).`, 'success');
-                        staffCutiMulai.value = '';
-                        document.getElementById('staffFilterBulan').value = targetBulanPertama;
+                    if (error) {
+                        showStaffAlert("Gagal mengirim pengajuan cuti.");
+                    } else {
+                        showStaffAlert(`BERHASIL: Pengajuan cuti beruntun selama ${totalHariCuti} hari berhasil dikirim!`, "success");
+                        filterBulan.value = bulanKey;
+                        renderMatrix();
+                        form.reset();
+                        document.getElementById('filterBulan').value = bulanKey;
+                        toggleJenisPengajuan();
+                    }
+                });
+
+            } else { // Offday
+                if (!offdayData[bulanKey]) offdayData[bulanKey] = {};
+                if (!offdayData[bulanKey][nama]) offdayData[bulanKey][nama] = {};
+
+                offdayData[bulanKey][nama][tglVal] = 'OFFDAY';
+
+                rtdb.ref(`offdayData_v7/${bulanKey}/${nama}`).set(offdayData[bulanKey][nama], (error) => {
+                    if (error) {
+                        showStaffAlert("Gagal mengirim pengajuan offday.");
+                    } else {
+                        showStaffAlert(`BERHASIL: Pengajuan Offday tanggal ${tglVal} berhasil dikirim!`, "success");
+                        filterBulan.value = bulanKey;
+                        renderMatrix();
+                        form.reset();
+                        document.getElementById('filterBulan').value = bulanKey;
+                        toggleJenisPengajuan();
                     }
                 });
             }
-        }
+        });
     </script>
 </body>
 </html>
