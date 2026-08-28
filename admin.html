@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - Offday & Cuti Management</title>
+    <title>Dashboard Admin - Sistem Manajemen Shift & Cuti</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -21,7 +21,7 @@
         }
         .font-mono-code { font-family: 'JetBrains Mono', monospace; }
         .card-container {
-            background: rgba(12, 14, 20, 0.65);
+            background: rgba(12, 14, 20, 0.75);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
             border: 1px solid rgba(250, 204, 21, 0.25);
@@ -57,20 +57,21 @@
 
     <div class="max-w-[98%] mx-auto px-4 py-6">
         <header class="mb-6">
-            <div class="card-container rounded-xl px-6 py-3 flex flex-wrap justify-between items-center gap-4 mb-4">
+            <div class="card-container rounded-xl px-6 py-4 flex flex-wrap justify-between items-center gap-4 mb-4">
                 <div class="flex items-center space-x-3">
                     <span class="w-3 h-3 bg-yellow-400 rounded-full animate-pulse"></span>
-                    <span class="text-xs font-mono-code tracking-wider text-yellow-400 uppercase font-bold">ADMIN DASHBOARD: OFFDAY & CUTI MANAGEMENT (CS, KAPTEN, KASIR)</span>
+                    <span class="text-xs font-mono-code tracking-wider text-yellow-400 uppercase font-bold">DASHBOARD ADMIN - KONTROL JADWAL</span>
                 </div>
-                <div class="flex items-center gap-4 text-xs font-mono-code text-slate-300">
-                    <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 bg-red-600 rounded-sm"></span> OFFDAY</span>
-                    <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 bg-indigo-600 rounded-sm"></span> CUTI</span>
-                    <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 bg-emerald-600 rounded-sm"></span> PAGI</span>
-                    <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 bg-blue-600 rounded-sm"></span> MALAM</span>
+                <div>
+                    <a href="staff.html" target="_blank" class="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-mono-code transition border border-slate-700">
+                        Buka Dashboard Staff ↗
+                    </a>
                 </div>
             </div>
-            <div class="bg-yellow-500/10 border border-yellow-500/30 rounded-xl px-6 py-2.5 text-xs font-mono-code text-yellow-300 flex items-center gap-2">
-                <span class="font-bold">⚠️ PERHATIAN KEBIJAKAN:</span> Seluruh divisi (CS, Kapten, Kasir) TIDAK DIIZINKAN mengambil Offday atau Cuti pada hari **KAMIS**. Pengajuan yang mencakup hari Kamis akan ditolak secara otomatis oleh sistem.
+            <div class="bg-yellow-500/10 border border-yellow-500/30 rounded-xl px-6 py-2.5 text-xs font-mono-code text-yellow-300 flex flex-col gap-1">
+                <div><span class="font-bold">⚠️ KEBIJAKAN 1:</span> Seluruh divisi (CS, Kapten, Kasir) TIDAK DIIZINKAN mengambil Offday atau Cuti pada hari **KAMIS**.</div>
+                <div><span class="font-bold">⚠️ KEBIJAKAN 2:</span> Jarak minimal pengambilan **Offday** berikutnya adalah **1 minggu (minimal 7 hari)** dari Offday/Cuti terakhir.</div>
+                <div><span class="font-bold">⚠️ KEBIJAKAN 3:</span> Batasan kuota Offday per hari untuk setiap divisi adalah maksimal **2 orang** (1 orang dari Shift Pagi dan 1 orang dari Shift Malam).</div>
             </div>
         </header>
 
@@ -85,7 +86,7 @@
                         <div>
                             <label class="block font-semibold mb-1 text-slate-200">JENIS INPUT</label>
                             <select id="jenisInput" required class="w-full px-3 py-2.5 rounded-lg input-pro text-xs" onchange="toggleJenisInput()">
-                                <option value="Offday" class="bg-slate-900">Pengajuan Offday</option>
+                                <option value="Offday" class="bg-slate-900">Pengajuan Offday (Jarak Min 1 Minggu)</option>
                                 <option value="Cuti" class="bg-slate-900">Pengajuan Cuti (Otomatis Beruntun)</option>
                                 <option value="ShiftStart" class="bg-slate-900">Set Shift Berkelanjutan</option>
                                 <option value="Change" class="bg-slate-900">Change Shift</option>
@@ -162,12 +163,11 @@
 
                 <div class="card-container rounded-xl overflow-hidden">
                     <div class="px-6 py-4 border-b border-yellow-500/20 flex justify-between items-center flex-wrap gap-3 font-mono-code">
-                        <h2 class="text-sm font-bold tracking-wide text-yellow-400 uppercase">JADWAL SHIFT GOLTOGEL</h2>
+                        <h2 class="text-sm font-bold tracking-wide text-yellow-400 uppercase">Rekapitulasi Shift & Status Bulanan</h2>
                     </div>
                     
                     <div class="overflow-x-auto max-h-[620px]">
-                        <table id="matrixTable" class="w-full text-left border-collapse text-[11px] font-mono-code whitespace-nowrap">
-                            </table>
+                        <table id="matrixTable" class="w-full text-left border-collapse text-[11px] font-mono-code whitespace-nowrap"></table>
                     </div>
                 </div>
             </div>
@@ -218,26 +218,6 @@
         let offdayData = {};
         let shiftStartData = {}; 
 
-        const form = document.getElementById('offdayForm');
-        const jenisInput = document.getElementById('jenisInput');
-        const divisiSelect = document.getElementById('divisi');
-        const namaSelect = document.getElementById('nama');
-        const tanggalGroup = document.getElementById('tanggalGroup');
-        const labelTanggal = document.getElementById('labelTanggal');
-        const tanggalInput = document.getElementById('tanggal');
-        const jumlahCutiGroup = document.getElementById('jumlahCutiGroup');
-        const jumlahCutiInput = document.getElementById('jumlahCuti');
-        const shiftGroup = document.getElementById('shiftGroup');
-        const labelShift = document.getElementById('labelShift');
-        const shiftSelect = document.getElementById('shift');
-        const alertBox = document.getElementById('alertBox');
-        const filterDivisi = document.getElementById('filterDivisi');
-        const filterBulan = document.getElementById('filterBulan');
-        const matrixTable = document.getElementById('matrixTable');
-        const formPanelTitle = document.getElementById('formPanelTitle');
-        const btnSubmitForm = document.getElementById('btnSubmitForm');
-        const btnCancelEdit = document.getElementById('btnCancelEdit');
-
         rtdb.ref('offdayData_v7').on('value', (snapshot) => {
             offdayData = snapshot.val() || {};
             renderMatrix();
@@ -249,7 +229,15 @@
         });
 
         function toggleJenisInput() {
-            const val = jenisInput.value;
+            const val = document.getElementById('jenisInput').value;
+            const jumlahCutiGroup = document.getElementById('jumlahCutiGroup');
+            const tanggalGroup = document.getElementById('tanggalGroup');
+            const labelTanggal = document.getElementById('labelTanggal');
+            const tanggalInput = document.getElementById('tanggal');
+            const shiftGroup = document.getElementById('shiftGroup');
+            const labelShift = document.getElementById('labelShift');
+            const shiftSelect = document.getElementById('shift');
+
             jumlahCutiGroup.classList.add('hidden');
             if (val === 'ShiftStart') {
                 tanggalGroup.classList.remove('hidden');
@@ -298,7 +286,8 @@
         }
 
         function updateKaryawanList() {
-            const selectedDivisi = divisiSelect.value;
+            const selectedDivisi = document.getElementById('divisi').value;
+            const namaSelect = document.getElementById('nama');
             namaSelect.innerHTML = '<option value="">-- Pilih Karyawan --</option>';
             if (selectedDivisi && karyawanData[selectedDivisi]) {
                 karyawanData[selectedDivisi].forEach(nama => {
@@ -312,6 +301,7 @@
         }
 
         function showAlert(message, type = 'error') {
+            const alertBox = document.getElementById('alertBox');
             alertBox.textContent = message;
             alertBox.classList.remove('hidden', 'bg-red-950/80', 'text-red-300', 'border-red-600', 'bg-emerald-950/80', 'text-emerald-300', 'border-emerald-600');
             if (type === 'error') {
@@ -319,12 +309,125 @@
             } else {
                 alertBox.classList.add('bg-emerald-950/80', 'text-emerald-300', 'border', 'border-emerald-600');
             }
-            setTimeout(() => { alertBox.classList.add('hidden'); }, 5000);
+            setTimeout(() => { alertBox.classList.add('hidden'); }, 6000);
+        }
+
+        function getEffectiveInitialShift(divisi, nama, targetMonthStr) {
+            if (shiftStartData[divisi] && shiftStartData[divisi][nama]) {
+                return shiftStartData[divisi][nama].toUpperCase();
+            }
+
+            let [y, m] = targetMonthStr.split('-').map(Number);
+            let checkDate = new Date(y, m - 1, 1);
+            checkDate.setMonth(checkDate.getMonth() - 1);
+            
+            let pastY = checkDate.getFullYear();
+            let pastM = String(checkDate.getMonth() + 1).padStart(2, '0');
+            let pastMonthStr = `${pastY}-${pastM}`;
+            
+            let daysInPastMonth = new Date(pastY, pastM, 0).getDate();
+            
+            let simulatedShift = 'PAGI';
+            let monthOffdayData = (offdayData[pastMonthStr] && offdayData[pastMonthStr][nama]) ? offdayData[pastMonthStr][nama] : {};
+
+            for (let d = 1; d <= daysInPastMonth; d++) {
+                let dStr = `${pastMonthStr}-${String(d).padStart(2, '0')}`;
+                let valData = monthOffdayData[dStr];
+                if (valData === 'CHANGE_SET_MALAM') {
+                    simulatedShift = 'MALAM';
+                } else if (valData === 'CHANGE_SET_PAGI') {
+                    simulatedShift = 'PAGI';
+                }
+            }
+
+            return simulatedShift;
+        }
+
+        // Fungsi Helper mendapatkan shift aktif karyawan pada tanggal tertentu
+        function getEmployeeShiftOnDate(divisi, nama, targetDateStr) {
+            let [y, m, d] = targetDateStr.split('-').map(Number);
+            let targetMonthStr = `${y}-${String(m).padStart(2, '0')}`;
+            let currentActiveShift = getEffectiveInitialShift(divisi, nama, targetMonthStr);
+
+            // Simulasi dari awal bulan hingga tanggal target untuk mengetahui perubahan shift (change shift)
+            for (let day = 1; day < d; day++) {
+                let dStr = `${targetMonthStr}-${String(day).padStart(2, '0')}`;
+                if (offdayData[targetMonthStr] && offdayData[targetMonthStr][nama] && offdayData[targetMonthStr][nama][dStr]) {
+                    let valData = offdayData[targetMonthStr][nama][dStr];
+                    if (valData === 'CHANGE_SET_MALAM') {
+                        currentActiveShift = 'MALAM';
+                    } else if (valData === 'CHANGE_SET_PAGI') {
+                        currentActiveShift = 'PAGI';
+                    }
+                }
+            }
+            return currentActiveShift;
+        }
+
+        function checkOffdaySpacing(nama, targetDateStr, excludeCurrentMonthStr, excludeDateStr = null) {
+            let targetTime = new Date(targetDateStr + 'T00:00:00').getTime();
+            let sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
+
+            for (let mKey in offdayData) {
+                if (offdayData[mKey] && offdayData[mKey][nama]) {
+                    let staffDays = offdayData[mKey][nama];
+                    for (let dStr in staffDays) {
+                        let statusVal = staffDays[dStr];
+                        if (statusVal === 'OFFDAY' || statusVal === 'OFF') {
+                            if (mKey === excludeCurrentMonthStr && dStr === excludeDateStr) continue;
+
+                            let existingTime = new Date(dStr + 'T00:00:00').getTime();
+                            let diffTime = targetTime - existingTime;
+
+                            if (diffTime > 0 && diffTime < sevenDaysMs) {
+                                return { isValid: false, conflictingDate: dStr };
+                            }
+                        }
+                    }
+                }
+            }
+            return { isValid: true };
+        }
+
+        // Fungsi Validasi Kuota Offday per Hari per Divisi (Maksimal 1 Pagi dan 1 Malam)
+        function checkDivisiOffdayQuota(divisi, targetDateStr, targetShift, excludeNama = null) {
+            let [y, m] = targetDateStr.split('-').map(Number);
+            let targetMonthStr = `${y}-${String(m).padStart(2, '0')}`;
+            let staffList = karyawanData[divisi] || [];
+
+            let countPagi = 0;
+            let countMalam = 0;
+
+            staffList.forEach(stName => {
+                if (excludeNama && stName === excludeNama) return;
+
+                if (offdayData[targetMonthStr] && offdayData[targetMonthStr][stName] && offdayData[targetMonthStr][stName][targetDateStr]) {
+                    let val = offdayData[targetMonthStr][stName][targetDateStr];
+                    if (val === 'OFFDAY' || val === 'OFF') {
+                        let stShift = getEmployeeShiftOnDate(divisi, stName, targetDateStr);
+                        if (stShift === 'PAGI') {
+                            countPagi++;
+                        } else if (stShift === 'MALAM') {
+                            countMalam++;
+                        }
+                    }
+                }
+            });
+
+            if (targetShift === 'Pagi' && countPagi >= 1) {
+                return { isValid: false, message: `Kuota Offday untuk Divisi ${divisi} Shift Pagi pada tanggal ${targetDateStr} sudah penuh (Maksimal 1 orang).` };
+            }
+            if (targetShift === 'Malam' && countMalam >= 1) {
+                return { isValid: false, message: `Kuota Offday untuk Divisi ${divisi} Shift Malam pada tanggal ${targetDateStr} sudah penuh (Maksimal 1 orang).` };
+            }
+
+            return { isValid: true };
         }
 
         function renderMatrix() {
-            const selectedDivisi = filterDivisi.value;
-            const selectedMonth = filterBulan.value;
+            const selectedDivisi = document.getElementById('filterDivisi').value;
+            const selectedMonth = document.getElementById('filterBulan').value;
+            const matrixTable = document.getElementById('matrixTable');
             if (!selectedMonth) return;
 
             const [year, month] = selectedMonth.split('-').map(Number);
@@ -334,7 +437,6 @@
             let headerHTML = `<thead><tr class="bg-slate-950/80 text-yellow-400 font-bold border-b border-yellow-500/30 text-center">`;
             headerHTML += `<th class="px-4 py-3 text-left sticky left-0 bg-[#0c0e14]/90 z-10 min-w-[200px]">NAMA KARYAWAN</th>`;
             for (let d = 1; d <= daysInMonth; d++) {
-                // Beri tanda visual kecil pada header tanggal jika hari tersebut adalah hari Kamis (getDay() === 4)
                 let dCheck = new Date(year, month - 1, d);
                 let isThurs = dCheck.getDay() === 4;
                 let thStyle = isThurs ? "text-red-400 bg-red-950/30 border-b-2 border-red-500" : "text-slate-200";
@@ -352,18 +454,15 @@
                     bodyHTML += `<tr>`;
                     bodyHTML += `<td class="px-4 py-2.5 font-semibold text-slate-100 sticky left-0 bg-[#0c0e14]/90 z-10">${nama}</td>`;
 
-                    let currentActiveShift = "";
-                    if (shiftStartData[selectedDivisi] && shiftStartData[selectedDivisi][nama]) {
-                        currentActiveShift = shiftStartData[selectedDivisi][nama].toUpperCase();
-                    }
+                    let currentActiveShift = getEffectiveInitialShift(selectedDivisi, nama, selectedMonth);
 
                     for (let d = 1; d <= daysInMonth; d++) {
                         let dateStr = `${selectedMonth}-${String(d).padStart(2, '0')}`;
                         let status = "-";
                         let displayText = "-";
                         let badgeClass = "bg-slate-800/50 text-slate-400";
-
                         let hasSpecialStatus = false;
+
                         if (offdayData[selectedMonth] && offdayData[selectedMonth][nama] && offdayData[selectedMonth][nama][dateStr]) {
                             let valData = offdayData[selectedMonth][nama][dateStr];
                             
@@ -385,14 +484,10 @@
                                 status = 'OFF';
                                 displayText = 'OFF';
                                 hasSpecialStatus = true;
-                            } else {
-                                status = valData.toUpperCase();
-                                displayText = status.substring(0, 4);
-                                hasSpecialStatus = true;
                             }
                         }
 
-                        if (!hasSpecialStatus && currentActiveShift !== "") {
+                        if (!hasSpecialStatus) {
                             status = currentActiveShift;
                             displayText = status.substring(0, 4);
                         }
@@ -415,9 +510,8 @@
                     }
 
                     bodyHTML += `<td class="px-4 py-2.5 text-center sticky right-0 bg-[#0c0e14]/90 z-10">
-                        <button onclick="resetJadwalStaff('${selectedDivisi}', '${nama}')" class="px-2.5 py-1 bg-red-700 hover:bg-red-600 text-white text-[11px] font-bold rounded transition shadow" title="Reset semua jadwal khusus ${nama} bulan ini">Reset</button>
+                        <button onclick="resetJadwalStaff('${selectedDivisi}', '${nama}')" class="px-2.5 py-1 bg-red-700 hover:bg-red-600 text-white text-[11px] font-bold rounded transition shadow">Reset</button>
                     </td>`;
-
                     bodyHTML += `</tr>`;
                 });
             }
@@ -427,55 +521,55 @@
         }
 
         function resetJadwalStaff(divisi, nama) {
-            const selectedMonth = filterBulan.value;
-            if (!confirm(`Apakah Anda yakin ingin mereset/menghapus semua jadwal khusus (offday/cuti/change shift) untuk ${nama} pada bulan ${selectedMonth}?`)) {
-                return;
-            }
+            const selectedMonth = document.getElementById('filterBulan').value;
+            if (!confirm(`Apakah Anda yakin ingin mereset/menghapus jadwal khusus ${nama} pada bulan ${selectedMonth}?`)) return;
 
             rtdb.ref(`offdayData_v7/${selectedMonth}/${nama}`).remove((error) => {
-                if (error) {
-                    showAlert("Gagal mereset jadwal staff.");
-                } else {
-                    showAlert(`BERHASIL: Jadwal ${nama} pada bulan ${selectedMonth} telah direset.`, 'success');
-                }
+                if (error) showAlert("Gagal mereset jadwal staff.");
+                else showAlert(`BERHASIL: Jadwal ${nama} pada bulan ${selectedMonth} telah direset.`, 'success');
             });
         }
 
         function bukaFormUbah(divisi, nama) {
-            filterDivisi.value = divisi;
-            divisiSelect.value = divisi;
+            document.getElementById('filterDivisi').value = divisi;
+            document.getElementById('divisi').value = divisi;
             updateKaryawanList();
-            namaSelect.value = nama;
+            document.getElementById('nama').value = nama;
 
-            formPanelTitle.textContent = `Ubah Jadwal: ${nama}`;
-            btnSubmitForm.textContent = "SIMPAN PERUBAHAN";
-            btnCancelEdit.classList.remove('hidden');
-            form.scrollIntoView({ behavior: 'smooth' });
+            document.getElementById('formPanelTitle').textContent = `Ubah Jadwal: ${nama}`;
+            document.getElementById('btnSubmitForm').textContent = "SIMPAN PERUBAHAN";
+            document.getElementById('btnCancelEdit').classList.remove('hidden');
+            document.getElementById('offdayForm').scrollIntoView({ behavior: 'smooth' });
         }
 
         function pilihTanggalLangsung(divisi, nama, dateStr) {
             bukaFormUbah(divisi, nama);
-            tanggalInput.value = dateStr;
+            document.getElementById('tanggal').value = dateStr;
             showAlert(`Mode Edit: Karyawan ${nama} untuk tanggal ${dateStr} dipilih.`, 'success');
         }
 
         function cancelEditMode() {
-            form.reset();
+            document.getElementById('offdayForm').reset();
             document.getElementById('filterBulan').value = currentYearMonth;
-            formPanelTitle.textContent = "Panel Kontrol Admin";
-            btnSubmitForm.textContent = "PROSES DATA ADMIN";
-            btnCancelEdit.classList.add('hidden');
+            document.getElementById('formPanelTitle').textContent = "Panel Kontrol Admin";
+            document.getElementById('btnSubmitForm').textContent = "PROSES DATA ADMIN";
+            document.getElementById('btnCancelEdit').classList.add('hidden');
             toggleJenisInput();
         }
 
-        form.addEventListener('submit', function(e) {
+        document.getElementById('offdayForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            const typeInput = jenisInput.value;
-            const divisi = divisiSelect.value;
-            const nama = namaSelect.value;
-            const tglVal = tanggalInput.value; 
-            const shiftVal = shiftSelect.value;
+            processSubmission(
+                document.getElementById('jenisInput').value,
+                document.getElementById('divisi').value,
+                document.getElementById('nama').value,
+                document.getElementById('tanggal').value,
+                document.getElementById('shift').value,
+                document.getElementById('jumlahCuti').value
+            );
+        });
 
+        function processSubmission(typeInput, divisi, nama, tglVal, shiftVal, jumlahCutiVal) {
             if (!divisi || !nama) {
                 showAlert("Harap pilih divisi dan nama karyawan!");
                 return;
@@ -483,18 +577,30 @@
 
             const bulanKey = tglVal ? tglVal.substring(0, 7) : currentYearMonth;
 
-            // VALIDASI KHUSUS HARI KAMIS (Hanya untuk Offday dan Cuti)
             if (typeInput === 'Offday') {
                 let targetDate = new Date(tglVal + 'T00:00:00');
                 if (targetDate.getDay() === 4) {
-                    showAlert("GAGAL: Hari Kamis dilarang mengambil Offday untuk semua divisi!", "error");
+                    showAlert("GAGAL: Hari Kamis dilarang mengambil Offday untuk semua divisi!");
+                    return;
+                }
+
+                // 1. Validasi jarak minimal 1 minggu (7 hari) dari offday sebelumnya
+                let spacingCheck = checkOffdaySpacing(nama, tglVal, bulanKey);
+                if (!spacingCheck.isValid) {
+                    showAlert(`GAGAL: Jarak pengambilan Offday minimal 1 minggu (7 hari). Karyawan ini sudah memiliki Offday pada tanggal ${spacingCheck.conflictingDate}!`);
+                    return;
+                }
+
+                // 2. Validasi kuota offday per hari (maksimal 1 orang Pagi dan 1 orang Malam per divisi)
+                let quotaCheck = checkDivisiOffdayQuota(divisi, tglVal, shiftVal, nama);
+                if (!quotaCheck.isValid) {
+                    showAlert(`GAGAL: ${quotaCheck.message}`);
                     return;
                 }
             } else if (typeInput === 'Cuti') {
-                const totalHariCuti = parseInt(jumlahCutiInput.value) || 12;
+                const totalHariCuti = parseInt(jumlahCutiVal) || 12;
                 let startDate = new Date(tglVal + 'T00:00:00');
 
-                // Cek apakah ada satupun tanggal di rentang cuti tersebut yang jatuh pada hari Kamis
                 for (let i = 0; i < totalHariCuti; i++) {
                     let dCheck = new Date(startDate);
                     dCheck.setDate(startDate.getDate() + i);
@@ -502,7 +608,7 @@
                         let y = dCheck.getFullYear();
                         let m = String(dCheck.getMonth() + 1).padStart(2, '0');
                         let d = String(dCheck.getDate()).padStart(2, '0');
-                        showAlert(`GAGAL: Pengajuan cuti ditolak karena mencakup hari Kamis (${y}-${m}-${d}). Semua divisi dilarang libur/cuti pada hari Kamis!`, "error");
+                        showAlert(`GAGAL: Pengajuan cuti ditolak karena mencakup hari Kamis (${y}-${m}-${d}). Semua divisi dilarang libur/cuti pada hari Kamis!`);
                         return;
                     }
                 }
@@ -531,57 +637,58 @@
                     }
                 });
             } else if (typeInput === 'Cuti') {
-                const totalHariCuti = parseInt(jumlahCutiInput.value) || 12;
+                const totalHariCuti = parseInt(jumlahCutiVal) || 12;
                 let startDate = new Date(tglVal + 'T00:00:00');
+
+                let updates = {};
+                if (!offdayData[bulanKey]) offdayData[bulanKey] = {};
+                if (!offdayData[bulanKey][nama]) offdayData[bulanKey][nama] = {};
 
                 for (let i = 0; i < totalHariCuti; i++) {
                     let dLoop = new Date(startDate);
                     dLoop.setDate(startDate.getDate() + i);
-                    
                     let y = dLoop.getFullYear();
                     let m = String(dLoop.getMonth() + 1).padStart(2, '0');
                     let d = String(dLoop.getDate()).padStart(2, '0');
-                    let loopDateStr = `${y}-${m}-${d}`;
-                    let loopBulanKey = `${y}-${m}`;
+                    let formattedDateStr = `${y}-${m}-${d}`;
+                    let targetMonthKey = `${y}-${m}`;
 
-                    if (!offdayData[loopBulanKey]) offdayData[loopBulanKey] = {};
-                    if (!offdayData[loopBulanKey][nama]) offdayData[loopBulanKey][nama] = {};
-
-                    offdayData[loopBulanKey][nama][loopDateStr] = 'CUTI';
+                    if (!updates[targetMonthKey]) updates[targetMonthKey] = {};
+                    updates[targetMonthKey][formattedDateStr] = 'CUTI';
                 }
 
-                let updates = {};
-                for (let bKey in offdayData) {
-                    if (offdayData[bKey][nama]) {
-                        updates[`offdayData_v7/${bKey}/${nama}`] = offdayData[bKey][nama];
+                let promises = [];
+                for (let mKey in updates) {
+                    if (!offdayData[mKey]) offdayData[mKey] = {};
+                    if (!offdayData[mKey][nama]) offdayData[mKey][nama] = {};
+
+                    for (let dStr in updates[mKey]) {
+                        offdayData[mKey][nama][dStr] = 'CUTI';
                     }
+                    promises.push(rtdb.ref(`offdayData_v7/${mKey}/${nama}`).set(offdayData[mKey][nama]));
                 }
 
-                rtdb.ref().update(updates, (error) => {
-                    if (error) {
-                        showAlert("Gagal memproses cuti beruntun lintas bulan.");
-                    } else {
-                        showAlert(`BERHASIL: Cuti beruntun selama ${totalHariCuti} hari untuk ${nama} berhasil disimpan.`, 'success');
-                        cancelEditMode();
-                        filterBulan.value = bulanKey;
-                        renderMatrix();
-                    }
+                Promise.all(promises).then(() => {
+                    showAlert(`BERHASIL: Cuti beruntun selama ${totalHariCuti} hari berhasil disimpan.`, 'success');
+                    cancelEditMode();
+                }).catch((error) => {
+                    showAlert("Gagal menyimpan data cuti beruntun.");
                 });
-            } else { // Offday
+            } else {
                 if (!offdayData[bulanKey]) offdayData[bulanKey] = {};
                 if (!offdayData[bulanKey][nama]) offdayData[bulanKey][nama] = {};
 
                 offdayData[bulanKey][nama][tglVal] = 'OFFDAY';
 
                 rtdb.ref(`offdayData_v7/${bulanKey}/${nama}`).set(offdayData[bulanKey][nama], (error) => {
-                    if (error) showAlert("Gagal memproses offday.");
+                    if (error) showAlert("Gagal menyimpan offday.");
                     else {
-                        showAlert(`BERHASIL: Offday untuk ${nama} berhasil disimpan.`, 'success');
+                        showAlert(`BERHASIL: Offday ${nama} pada tanggal ${tglVal} tersimpan.`, 'success');
                         cancelEditMode();
                     }
                 });
             }
-        });
+        }
     </script>
 </body>
 </html>
