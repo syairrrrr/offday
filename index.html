@@ -589,8 +589,8 @@
 
                 if (offdayData[mKey] && offdayData[mKey][nama] && offdayData[mKey][nama][curDateStr]) {
                     let valData = offdayData[mKey][nama][curDateStr];
-                    if (valData === 'CHANGE_SET_MALAM') runningShift = 'MALAM';
-                    else if (valData === 'CHANGE_SET_PAGI') runningShift = 'PAGI';
+                    if (valData === 'CHANGE_SET_MALAM') runningShift = 'CHANGE MALAM';
+                    else if (valData === 'CHANGE_SET_PAGI') runningShift = 'CHANGE PAGI';
                 }
 
                 if (curDateStr === targetDateStr) break;
@@ -619,8 +619,8 @@
 
                 if (offdayData[mKey] && offdayData[mKey][nama] && offdayData[mKey][nama][curDateStr]) {
                     let valData = offdayData[mKey][nama][curDateStr];
-                    if (valData === 'CHANGE_SET_MALAM') runningShift = 'MALAM';
-                    else if (valData === 'CHANGE_SET_PAGI') runningShift = 'PAGI';
+                    if (valData === 'CHANGE_SET_MALAM') runningShift = 'CHANGE MALAM';
+                    else if (valData === 'CHANGE_SET_PAGI') runningShift = 'CHANGE PAGI';
                 }
 
                 tempDate.setDate(tempDate.getDate() + 1);
@@ -676,13 +676,13 @@
                             
                             if (valData === 'CHANGE_SET_MALAM') {
                                 runningShift = 'MALAM';
-                                status = 'MALAM';
-                                displayText = 'MALAM';
+                                status = 'CHANGE MALAM';
+                                displayText = 'CHANGE MALAM';
                                 hasSpecialStatus = true;
                             } else if (valData === 'CHANGE_SET_PAGI') {
                                 runningShift = 'PAGI';
-                                status = 'PAGI';
-                                displayText = 'PAGI';
+                                status = 'CHANGE PAGI';
+                                displayText = 'CHANGE PAGI';
                                 hasSpecialStatus = true;
                             } else if (valData.toUpperCase() === 'CUTI') {
                                 status = 'CUTI';
